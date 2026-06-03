@@ -31,7 +31,7 @@ gtag('config', 'G-Y2DL6WW9HH');
 <meta property="og:description" content="星座×数秘術×行動学で占う、あなたの子だけのパーソナル鑑定。無料・登録不要。" />
 <meta property="og:image" content="https://petdogcat.jp/ogp/ogp-uranai.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="theme-color" content="#E36E42" />
+<meta name="theme-color" content="#241544" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,48 +45,55 @@ gtag('config', 'G-Y2DL6WW9HH');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 :root{
-  --orange:#E36E42;        /* メインカラー */
-  --orange-d:#C9542B;      /* 濃いオレンジ */
-  --orange-l:#F4A276;      /* 明るいオレンジ */
-  --cream:#FFF9F3;         /* 背景クリーム */
-  --cream2:#FFF1E6;        /* 薄いオレンジ背景 */
-  --ink:#4A3B33;           /* 文字（こげ茶） */
-  --ink-s:#8A7768;         /* サブ文字 */
-  --gold:#E8B04B;          /* 星・装飾のゴールド */
-  --lav:#B6A8D8;           /* パステル紫（神秘アクセント） */
-  --sky:#9DC9E0;           /* パステル水色 */
-  --pink:#F0B6C4;          /* パステルピンク */
+  /* ★紫×ゴールドの神秘的トンマナ（変数名は据え置きで色だけ紫系に変更） */
+  --orange:#8367C7;        /* メインカラー＝アメジスト紫 */
+  --orange-d:#5E3FA0;      /* 濃い紫（見出し・濃色） */
+  --orange-l:#B9A5E8;      /* 明るい紫（ラベンダー） */
+  --cream:#FAF7FF;         /* カード内の淡い背景 */
+  --cream2:#F1EAFF;        /* 薄いラベンダー背景 */
+  --ink:#352B4D;           /* カード内の文字（濃い紫グレー） */
+  --ink-s:#7C7298;         /* サブ文字（くすみ紫） */
+  --gold:#E8C15B;          /* 星・装飾のゴールド（紫に映える） */
+  --lav:#B9A5E8;           /* ラベンダーアクセント */
+  --sky:#9D9CE0;           /* 青紫 */
+  --pink:#D4A5E8;          /* 紫ピンク */
   --card:#FFFFFF;
-  --line:rgba(227,110,66,.16);
+  --line:rgba(131,103,199,.20);
+  /* ページ背景（暗い紫）上に置くテキスト用の明色 */
+  --page-tx:#ECE3FF;
+  --page-txs:#C3B4E8;
   --R:20px;
   --pad:clamp(18px,5vw,40px);
-  --shadow:0 14px 40px rgba(201,84,43,.12);
+  --shadow:0 16px 44px rgba(36,18,64,.45);
 }
 body{
   font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
   color:var(--ink);line-height:1.85;overflow-x:hidden;
+  /* 深い紫＝夜空のような神秘的な背景。星(.stars)が映える */
   background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(182,168,216,.20), transparent 60%),
-    radial-gradient(900px 500px at -10% 20%, rgba(157,201,224,.18), transparent 55%),
-    linear-gradient(180deg, var(--cream2) 0%, var(--cream) 30%, var(--cream) 100%);
+    radial-gradient(1100px 600px at 80% -8%, rgba(150,108,224,.40), transparent 60%),
+    radial-gradient(900px 520px at -10% 18%, rgba(96,62,165,.38), transparent 55%),
+    radial-gradient(800px 560px at 50% 112%, rgba(128,86,206,.30), transparent 60%),
+    linear-gradient(180deg, #1c1136 0%, #241544 42%, #190f2c 100%);
+  background-attachment:fixed;
   min-height:100vh;
 }
 .serif{font-family:'Noto Serif JP',serif}
 
 /* 背景に漂う星（装飾） */
 .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.stars span{position:absolute;color:var(--gold);opacity:.45;animation:tw 4s ease-in-out infinite}
-@keyframes tw{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:.7;transform:scale(1.15)}}
+.stars span{position:absolute;color:var(--gold);opacity:.55;text-shadow:0 0 6px rgba(232,193,91,.6);animation:tw 4s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:.9;transform:scale(1.2)}}
 
 /* ═══ NAV ═══ */
-#nav{position:sticky;top:0;z-index:50;background:rgba(255,249,243,.9);
-  backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+#nav{position:sticky;top:0;z-index:50;background:rgba(25,15,44,.82);
+  backdrop-filter:blur(12px);border-bottom:1px solid rgba(185,165,232,.22)}
 .nav-in{max-width:880px;margin:0 auto;padding:10px var(--pad);display:flex;align-items:center;gap:10px}
-.nav-in a.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--orange-d);font-weight:900}
+.nav-in a.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--page-tx);font-weight:900}
 .nav-in a.brand .logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
   background:linear-gradient(135deg,var(--orange),var(--orange-l));color:#fff;font-size:16px}
-.nav-in .back{margin-left:auto;font-size:12px;color:var(--ink-s);text-decoration:none;font-weight:700}
-.nav-in .back:hover{color:var(--orange-d)}
+.nav-in .back{margin-left:auto;font-size:12px;color:var(--page-txs);text-decoration:none;font-weight:700}
+.nav-in .back:hover{color:#fff}
 
 /* ═══ レイアウト ═══ */
 .wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:0 var(--pad) 80px}
@@ -98,10 +105,10 @@ body{
 .hero h1{font-size:clamp(26px,7vw,42px);font-weight:700;letter-spacing:.04em;margin:14px 0 6px;
   background:linear-gradient(120deg,var(--orange-d),var(--orange),var(--gold));
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.hero .sub{font-size:clamp(13px,3.5vw,16px);color:var(--ink-s);font-weight:500}
+.hero .sub{font-size:clamp(13px,3.5vw,16px);color:var(--page-txs);font-weight:500}
 .hero .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
 .hero .tags span{font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;
-  background:#fff;border:1px solid var(--line);color:var(--orange-d)}
+  background:rgba(255,255,255,.12);border:1px solid rgba(185,165,232,.4);color:var(--page-tx);backdrop-filter:blur(4px)}
 
 /* ═══ カード共通 ═══ */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--R);
@@ -119,24 +126,37 @@ body{
 input[type=text],input[type=date],input[type=time],select{
   width:100%;padding:12px 14px;font-size:15px;font-family:inherit;color:var(--ink);
   background:var(--cream);border:1.5px solid var(--line);border-radius:12px;transition:.18s;-webkit-appearance:none;appearance:none}
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23C9542B' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%235E3FA0' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
-input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff;box-shadow:0 0 0 4px rgba(227,110,66,.12)}
+input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff;box-shadow:0 0 0 4px rgba(131,103,199,.12)}
 /* 種別・性別ラジオ */
 .radio-row{display:flex;gap:10px}
 .radio-row label{flex:1;position:relative;cursor:pointer}
 .radio-row input{position:absolute;opacity:0;inset:0}
 .radio-row .chip{display:flex;align-items:center;justify-content:center;gap:6px;padding:13px;
   border:1.5px solid var(--line);border-radius:12px;background:var(--cream);font-weight:700;font-size:15px;transition:.18s}
-.radio-row input:checked + .chip{border-color:var(--orange);background:linear-gradient(135deg,var(--orange),var(--orange-l));color:#fff;box-shadow:0 6px 16px rgba(227,110,66,.3)}
+.radio-row input:checked + .chip{border-color:var(--orange);background:linear-gradient(135deg,var(--orange),var(--orange-l));color:#fff;box-shadow:0 6px 16px rgba(131,103,199,.3)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:520px){.grid2{grid-template-columns:1fr}}
+/* 顔写真アップロード欄 */
+.photo-drop{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+  min-height:88px;padding:14px;border:1.5px dashed var(--line);border-radius:14px;background:var(--cream);transition:.18s;overflow:hidden}
+.photo-drop:hover{border-color:var(--orange);background:#fff}
+.photo-drop .photo-ph{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--orange-d);text-align:center}
+.photo-drop .photo-ph small{font-weight:500;font-size:10.5px;color:var(--ink-s)}
+.photo-drop img{display:none;width:74px;height:74px;border-radius:50%;object-fit:cover;border:2px solid var(--lav);box-shadow:0 4px 12px rgba(131,103,199,.3)}
+.photo-drop.has-photo{border-style:solid;flex-direction:row}
+.photo-drop.has-photo img{display:block}
+.photo-drop.has-photo .photo-ph{align-items:flex-start;text-align:left;color:var(--ink)}
+.photo-drop .photo-clear{display:none;position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;
+  border:none;background:rgba(53,43,77,.55);color:#fff;font-size:12px;cursor:pointer;line-height:1}
+.photo-drop.has-photo .photo-clear{display:block}
 
 .submit{width:100%;margin-top:26px;padding:17px;font-size:17px;font-weight:900;font-family:inherit;color:#fff;
   border:none;border-radius:14px;cursor:pointer;letter-spacing:.06em;
   background:linear-gradient(120deg,var(--orange-d),var(--orange),var(--gold));
-  box-shadow:0 12px 28px rgba(227,110,66,.4);transition:.2s}
-.submit:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(227,110,66,.5)}
+  box-shadow:0 12px 28px rgba(131,103,199,.4);transition:.2s}
+.submit:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(131,103,199,.5)}
 .submit:active{transform:translateY(0)}
 .err{color:var(--orange-d);font-size:12.5px;font-weight:700;margin-top:12px;text-align:center;min-height:1em}
 
@@ -162,13 +182,13 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
 .item .ihead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .item .inum{flex-shrink:0;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
   font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:#fff;
-  background:linear-gradient(135deg,var(--orange),var(--orange-l));box-shadow:0 6px 14px rgba(227,110,66,.3)}
+  background:linear-gradient(135deg,var(--orange),var(--orange-l));box-shadow:0 6px 14px rgba(131,103,199,.3)}
 .item .ititle{font-size:17px;font-weight:900;color:var(--ink)}
 .item .ititle .ico{margin-right:6px}
 .item .ibody{font-size:14.5px;line-height:1.95;color:var(--ink)}
 .item .ibody p{margin-bottom:12px}
 .item .ibody p:last-child{margin-bottom:0}
-.item.feature{border:1.5px solid rgba(227,110,66,.3)}
+.item.feature{border:1.5px solid rgba(131,103,199,.3)}
 .item.feature::before{height:5px}
 .item .badge{display:inline-block;font-size:10px;font-weight:900;color:#fff;background:var(--orange-d);
   border-radius:999px;padding:3px 10px;margin-left:8px;vertical-align:middle}
@@ -212,8 +232,8 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
     linear-gradient(160deg,#fff,var(--cream2))}
 .happy .ring{width:180px;height:180px;border-radius:50%;margin:6px auto 4px;display:grid;place-items:center;
   /* conic-gradientの角度はJSが --p（パーセント）で動的指定 */
-  background:conic-gradient(var(--orange) calc(var(--p)*1%), #F3E3D6 0);
-  position:relative;box-shadow:0 10px 30px rgba(227,110,66,.22)}
+  background:conic-gradient(var(--orange) calc(var(--p)*1%), #EAE1FB 0);
+  position:relative;box-shadow:0 10px 30px rgba(131,103,199,.22)}
 .happy .ring::before{content:"";position:absolute;inset:14px;border-radius:50%;background:#fff}
 .happy .ring .score{position:relative;z-index:1;font-family:'Noto Serif JP',serif;font-weight:700;line-height:1;color:var(--orange-d)}
 .happy .ring .score b{font-size:52px}
@@ -234,13 +254,28 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
 
 /* 【飼い主への手紙】便箋風＋手書き風フォント */
 .letter{background:
-    repeating-linear-gradient(180deg, transparent 0 33px, rgba(227,110,66,.10) 33px 34px),
-    linear-gradient(180deg,#FFFDFa,#FFF7EF);
+    repeating-linear-gradient(180deg, transparent 0 33px, rgba(131,103,199,.10) 33px 34px),
+    linear-gradient(180deg,#FCFAFF,#F5F0FF);
   border:1px solid var(--line)}
 .letter .lt-deco{text-align:center;color:var(--orange);font-size:13px;letter-spacing:4px;margin-bottom:10px}
-.letter .lt-body{font-family:'Yomogi',cursive;font-size:15.5px;line-height:2.05;color:#5a463a}
+.letter .lt-body{font-family:'Yomogi',cursive;font-size:15.5px;line-height:2.05;color:#4a3f63}
 .letter .lt-body p{margin-bottom:14px}
 .letter .lt-sign{text-align:right;font-family:'Yomogi',cursive;font-size:17px;font-weight:400;color:var(--orange-d);margin-top:6px}
+/* 手紙に飾る顔写真（おしゃれな額装：回転グラデのリング＋柔らかなビネット） */
+.lt-photo{display:flex;flex-direction:column;align-items:center;margin:2px 0 18px}
+.lt-photo .frame{position:relative;width:144px;height:144px;border-radius:50%;padding:6px;
+  background:conic-gradient(from 210deg,var(--gold),var(--lav),var(--orange-l),var(--pink),var(--gold));
+  box-shadow:0 10px 28px rgba(94,63,160,.40)}
+.lt-photo .frame::after{content:"";position:absolute;inset:6px;border-radius:50%;
+  box-shadow:inset 0 0 20px rgba(94,63,160,.30);pointer-events:none}
+.lt-photo .frame img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;
+  border:3px solid #fff;filter:saturate(1.06) contrast(1.03)}
+.lt-photo .cap{margin-top:9px;font-family:'Yomogi',cursive;font-size:13.5px;color:var(--orange-d)}
+.lt-photo .cap .sp{color:var(--gold)}
+
+/* プロフィール見出しの顔写真アバター（写真があれば絵文字の代わりに） */
+.profile .pet-photo{width:100px;height:100px;border-radius:50%;object-fit:cover;display:block;margin:2px auto 2px;
+  border:3px solid #fff;box-shadow:0 8px 24px rgba(94,63,160,.45);outline:2px solid var(--lav);outline-offset:3px}
 
 /* SNSシェアボタン（X / LINE / Instagram） */
 .sns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:4px}
@@ -267,7 +302,7 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
 .eclat .ec-d{font-size:12.5px;color:var(--ink-s);margin:8px 0 14px;line-height:1.8}
 .eclat a.ec-btn{display:inline-block;text-decoration:none;font-weight:800;font-size:13.5px;color:#fff;
   background:linear-gradient(120deg,var(--orange-d),var(--orange));border-radius:999px;padding:11px 24px;
-  box-shadow:0 8px 20px rgba(227,110,66,.3);transition:.18s}
+  box-shadow:0 8px 20px rgba(131,103,199,.3);transition:.18s}
 .eclat a.ec-btn:hover{transform:translateY(-2px)}
 
 /* シェアエリア */
@@ -275,7 +310,7 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
 .share p{font-size:13px;color:var(--ink-s);margin-bottom:14px;font-weight:700}
 .share .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .share button{font-family:inherit;font-weight:800;font-size:14px;padding:12px 22px;border-radius:12px;cursor:pointer;border:none;transition:.18s}
-.share .b-share{background:linear-gradient(120deg,var(--orange),var(--gold));color:#fff;box-shadow:0 8px 20px rgba(227,110,66,.35)}
+.share .b-share{background:linear-gradient(120deg,var(--orange),var(--gold));color:#fff;box-shadow:0 8px 20px rgba(131,103,199,.35)}
 .share .b-again{background:#fff;color:var(--orange-d);border:1.5px solid var(--line)}
 .share button:hover{transform:translateY(-2px)}
 
@@ -284,7 +319,7 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
 .coming .t{font-weight:900;color:var(--orange-d);font-size:14px}
 .coming .d{font-size:12px;color:var(--ink-s);margin-top:6px}
 
-footer{text-align:center;padding:34px var(--pad);color:var(--ink-s);font-size:11px;position:relative;z-index:1}
+footer{text-align:center;padding:34px var(--pad);color:var(--page-txs);font-size:11px;position:relative;z-index:1}
 </style>
 </head>
 <body>
@@ -389,6 +424,17 @@ footer{text-align:center;padding:34px var(--pad);color:var(--ink-s);font-size:11
           <option value="繁殖">元繁殖犬・元繁殖猫</option>
           <option value="その他">その他</option>
         </select>
+      </div>
+
+      <!-- 顔写真（任意）：アップロードすると最後の「手紙」におしゃれに描写される -->
+      <div class="field">
+        <label for="photo">顔写真<span class="opt">（任意・手紙に飾られます）</span></label>
+        <label class="photo-drop" id="photoDrop" for="photo">
+          <img id="photoPreview" alt="">
+          <span class="photo-ph" id="photoPh">📷 タップして写真を選ぶ<small>愛犬・愛猫の顔写真（端末内で処理・送信されません）</small></span>
+          <button type="button" class="photo-clear" id="photoClear" aria-label="写真を削除">✕</button>
+        </label>
+        <input type="file" id="photo" name="photo" accept="image/*" hidden>
       </div>
 
       <button type="submit" class="submit">✦ 鑑定する ✦</button>
@@ -1420,6 +1466,13 @@ function buildLetter(p){
   let html="";
   html+=`<div class="fin-head"><div class="fi">✉️</div><div class="ft">${n}ちゃんからあなたへの手紙</div></div>`;
   html+=`<div class="lt-deco">✦ ────────── ✦</div>`;
+  // 顔写真があれば、手紙の冒頭におしゃれな額装で飾る
+  if(p.input.photo){
+    html+=`<figure class="lt-photo">
+      <div class="frame"><img src="${p.input.photo}" alt="${n}ちゃんの写真"></div>
+      <figcaption class="cap"><span class="sp">✦</span> ${n} <span class="sp">✦</span></figcaption>
+    </figure>`;
+  }
   html+=`<div class="lt-body">${body}</div>`;
   html+=`<div class="lt-sign">${n} より 🐾</div>`;
   return {html};
@@ -1477,7 +1530,7 @@ function renderResult(p){
   let html="";
   // プロフィール要約（スクショ・シェア映えするヘッダー）
   html+=`<div class="card profile">
-    <div class="pet-emoji">${emoji}✦</div>
+    ${p.input.photo ? `<img class="pet-photo" src="${p.input.photo}" alt="${n}ちゃんの写真">` : `<div class="pet-emoji">${emoji}✦</div>`}
     <h2 class="serif">${n} ちゃんの鑑定書</h2>
     <p class="pet-meta">${escapeHtml(p.input.gender)}・${p.breed.label}${p.input.color?"・"+escapeHtml(p.input.color):""}</p>
     <div class="axis">
@@ -1583,6 +1636,10 @@ function renderResult(p){
     r.classList.remove("show"); r.innerHTML="";
     document.getElementById("petForm").reset();
     renderBreedOptions(document.querySelector('input[name="species"]:checked').value);
+    // 顔写真プレビューも初期化
+    const pd=document.getElementById("photoDrop"), pp=document.getElementById("photoPreview"), ph=document.getElementById("photoPh");
+    if(pd){ pd.classList.remove("has-photo"); pp.removeAttribute("src");
+      ph.innerHTML=`📷 タップして写真を選ぶ<small>愛犬・愛猫の顔写真（端末内で処理・送信されません）</small>`; }
     document.getElementById("formCard").scrollIntoView({behavior:"smooth"});
   });
 
@@ -1611,8 +1668,17 @@ function onSubmit(e){
   if(!input.name){ err.textContent="お名前を入力してください🐾"; return; }
   if(!input.birth){ err.textContent="生年月日を入力してください🐾"; return; }
 
-  const profile=buildProfile(input);
-  renderResult(profile);
+  // 顔写真（任意）：あれば端末内でデータURL化してから鑑定（外部送信なし）
+  const photoFile = f.photo && f.photo.files && f.photo.files[0];
+  const proceed = ()=>{ renderResult(buildProfile(input)); };
+  if(photoFile){
+    const reader=new FileReader();
+    reader.onload =()=>{ input.photo=reader.result; proceed(); };
+    reader.onerror=()=>{ proceed(); }; // 読めなくても写真なしで続行
+    reader.readAsDataURL(photoFile);
+  }else{
+    proceed();
+  }
 }
 
 /* ───────────────────────────────────────────
@@ -1634,6 +1700,32 @@ function onSubmit(e){
   renderBreedOptions("dog");
   document.querySelectorAll('input[name="species"]').forEach(r=>{
     r.addEventListener("change",e=>renderBreedOptions(e.target.value));
+  });
+
+  // 顔写真のプレビュー（端末内で表示するだけ・外部送信なし）
+  const photoInput=document.getElementById("photo");
+  const photoDrop=document.getElementById("photoDrop");
+  const photoPrev=document.getElementById("photoPreview");
+  const photoPh=document.getElementById("photoPh");
+  const photoClear=document.getElementById("photoClear");
+  photoInput.addEventListener("change",()=>{
+    const file=photoInput.files&&photoInput.files[0];
+    if(!file){ return; }
+    const reader=new FileReader();
+    reader.onload=()=>{
+      photoPrev.src=reader.result;
+      photoDrop.classList.add("has-photo");
+      photoPh.innerHTML=`写真を選びました<small>手紙と鑑定書に飾られます ✦</small>`;
+    };
+    reader.readAsDataURL(file);
+  });
+  // 写真の削除（✕）。ラベルへの伝播を止めてファイル選択が開かないように
+  photoClear.addEventListener("click",(e)=>{
+    e.preventDefault(); e.stopPropagation();
+    photoInput.value="";
+    photoPrev.removeAttribute("src");
+    photoDrop.classList.remove("has-photo");
+    photoPh.innerHTML=`📷 タップして写真を選ぶ<small>愛犬・愛猫の顔写真（端末内で処理・送信されません）</small>`;
   });
 
   document.getElementById("petForm").addEventListener("submit",onSubmit);
