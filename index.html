@@ -35,7 +35,8 @@ gtag('config', 'G-Y2DL6WW9HH');
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<!-- Yomogi＝手書き風フォント（⑳の手紙の装飾に使用） -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@500;700&family=Yomogi&display=swap" rel="stylesheet">
 
 <style>
 /* ═══════════════════════════════════════════
@@ -197,7 +198,77 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
 .toc a .tn{flex-shrink:0;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;
   font-size:11px;font-weight:900;color:#fff;background:var(--orange-l)}
 /* 目次リンクのジャンプ先がスティッキーNavに隠れないように */
-.item{scroll-margin-top:62px}
+.item,.fin{scroll-margin-top:62px}
+
+/* ═══ ★第4回 フィナーレ（締めの3点）★ ═══ */
+/* 締めセクション共通の見出し */
+.fin .fin-head{text-align:center;margin-bottom:16px}
+.fin .fin-head .fi{font-size:30px}
+.fin .fin-head .ft{font-size:18px;font-weight:900;color:var(--orange-d);margin-top:4px}
+
+/* 【幸福度メーター】円グラフ風リング＋ハート（スクショ映え） */
+.happy{text-align:center;background:
+    radial-gradient(500px 260px at 50% -10%, rgba(240,182,196,.25), transparent 60%),
+    linear-gradient(160deg,#fff,var(--cream2))}
+.happy .ring{width:180px;height:180px;border-radius:50%;margin:6px auto 4px;display:grid;place-items:center;
+  /* conic-gradientの角度はJSが --p（パーセント）で動的指定 */
+  background:conic-gradient(var(--orange) calc(var(--p)*1%), #F3E3D6 0);
+  position:relative;box-shadow:0 10px 30px rgba(227,110,66,.22)}
+.happy .ring::before{content:"";position:absolute;inset:14px;border-radius:50%;background:#fff}
+.happy .ring .score{position:relative;z-index:1;font-family:'Noto Serif JP',serif;font-weight:700;line-height:1;color:var(--orange-d)}
+.happy .ring .score b{font-size:52px}
+.happy .ring .score span{font-size:18px}
+.happy .hearts{font-size:18px;letter-spacing:2px;margin-top:6px}
+.happy .happy-msg{font-size:14px;color:var(--ink);margin-top:10px}
+
+/* 【幸せの瞬間ベスト5】ランキング */
+.best5 ol{list-style:none;counter-reset:rk}
+.best5 li{display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px dashed var(--line)}
+.best5 li:last-child{border-bottom:none}
+.best5 li .rk{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  font-family:'Noto Serif JP',serif;font-weight:700;font-size:16px;color:#fff;background:linear-gradient(135deg,var(--orange-l),var(--orange))}
+.best5 li:nth-child(1) .rk{background:linear-gradient(135deg,#F6CE5B,var(--gold));box-shadow:0 4px 12px rgba(232,176,75,.5)}
+.best5 li:nth-child(2) .rk{background:linear-gradient(135deg,#cfd6dd,#a8b3bd)}
+.best5 li:nth-child(3) .rk{background:linear-gradient(135deg,#e6b88f,#cd9b6e)}
+.best5 li .rtxt{font-size:14px;font-weight:500}
+
+/* 【飼い主への手紙】便箋風＋手書き風フォント */
+.letter{background:
+    repeating-linear-gradient(180deg, transparent 0 33px, rgba(227,110,66,.10) 33px 34px),
+    linear-gradient(180deg,#FFFDFa,#FFF7EF);
+  border:1px solid var(--line)}
+.letter .lt-deco{text-align:center;color:var(--orange);font-size:13px;letter-spacing:4px;margin-bottom:10px}
+.letter .lt-body{font-family:'Yomogi',cursive;font-size:15.5px;line-height:2.05;color:#5a463a}
+.letter .lt-body p{margin-bottom:14px}
+.letter .lt-sign{text-align:right;font-family:'Yomogi',cursive;font-size:17px;font-weight:400;color:var(--orange-d);margin-top:6px}
+
+/* SNSシェアボタン（X / LINE / Instagram） */
+.sns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:4px}
+.sns button{font-family:inherit;font-weight:800;font-size:13.5px;color:#fff;border:none;border-radius:12px;
+  padding:12px 18px;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;gap:7px}
+.sns button:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.sns .x{background:#111}
+.sns .line{background:#06C755}
+.sns .ig{background:linear-gradient(45deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888)}
+
+/* 回遊リンク（他の診断・エクラ導線） */
+.cross .cx-t{font-size:14px;font-weight:900;color:var(--orange-d);margin-bottom:12px;text-align:center}
+.cross .cx-links{display:grid;gap:10px}
+.cross a.cx{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);
+  background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:13px 15px;transition:.16s}
+.cross a.cx:hover{border-color:var(--orange);background:#fff;transform:translateY(-1px)}
+.cross a.cx .cx-ico{font-size:22px;flex-shrink:0}
+.cross a.cx .cx-tx b{display:block;font-size:14px;font-weight:900}
+.cross a.cx .cx-tx span{font-size:11.5px;color:var(--ink-s)}
+.cross a.cx .cx-go{margin-left:auto;color:var(--orange);font-weight:900}
+/* エクラへの優しい導線（押し売りにしない・健康効果の断定はしない） */
+.eclat{text-align:center;background:linear-gradient(160deg,#fff,var(--cream2))}
+.eclat .ec-t{font-size:14px;font-weight:900;color:var(--orange-d)}
+.eclat .ec-d{font-size:12.5px;color:var(--ink-s);margin:8px 0 14px;line-height:1.8}
+.eclat a.ec-btn{display:inline-block;text-decoration:none;font-weight:800;font-size:13.5px;color:#fff;
+  background:linear-gradient(120deg,var(--orange-d),var(--orange));border-radius:999px;padding:11px 24px;
+  box-shadow:0 8px 20px rgba(227,110,66,.3);transition:.18s}
+.eclat a.ec-btn:hover{transform:translateY(-2px)}
 
 /* シェアエリア */
 .share{text-align:center;margin-top:28px}
@@ -831,7 +902,7 @@ function item01_personality(p){
   html+=`<p>ときに頑固に見えたり、気分屋に映る瞬間があるかもしれません。けれどそれは、${n}ちゃんが自分の心に正直で、まっすぐに生きている証。短所のように見えるところまで含めて、まるごと愛おしい——それがこの子の魅力です。</p>`;
   // 経歴補正（保護・繁殖などのトーン）
   if(p.history.tone){ html+=`<div class="quote">${p.history.tone}</div>`; }
-  return {title:"性格診断", ico:"🌟", html, feature:true};
+  return {title:"性格診断", ico:"🌟", html, feature:true, badge:"占いの顔"};
 }
 
 // ② 飼い主との相性（数秘＋星座ベース）
@@ -1170,11 +1241,189 @@ function item17_senior(p){
   return {title:"シニア期の傾向", ico:"🌷", html};
 }
 
-/* ── 後続回（第4回）で実装する項目のひな形 ── */
-// function item18_xxx(p){ /* ⑱ */ } …（⑱〜⑳）
-// function itemHappiness(p){ /* 幸福度メーター */ }
-// function itemBest5(p){ /* 幸せの瞬間ベスト5 */ }
-// function itemLetter(p){ /* ペットから飼い主への手紙 */ }
+/* ═══════════════════════════════════════════════════════════════
+   ★第4回（最終回）追加★ 項目⑱〜⑳ ＋ 締めの3点（幸福度／ベスト5／手紙）
+═══════════════════════════════════════════════════════════════ */
+
+// 一人称の代名詞（性別で出し分け。手紙やメッセージで使用）
+function firstPerson(p){ return p.input.gender==="女の子" ? "わたし" : "ぼく"; }
+
+/* ── 第4回 追加データ ── */
+// ⑱してあげると喜ぶこと / ⑲避けた方が良いこと（犬種グループごと）
+const DOG_GROUP_JOY = {
+  小型愛玩犬:{please:"ひざの上でのまったりタイムや、やさしく名前を呼んでなでてあげること。あなたとくっついている時間が何よりのごほうび",
+    avoid:"長いお留守番でさみしくさせるより、短くても毎日ふれあう時間を作ってあげると、もっと安心して過ごせます"},
+  大型使役犬:{please:"一緒のお散歩や、どっしり寄り添えるスキンシップ。あなたと過ごす穏やかな時間に深い幸せを感じます",
+    avoid:"運動不足や退屈が続くより、たっぷり一緒に体を動かす時間を作ってあげると、心も体も満たされます"},
+  狩猟犬系:{please:"頭と体を使う遊びや、においを探す宝さがしのような遊び。夢中になれる時間に大喜びします",
+    avoid:"エネルギーを持て余したままにするより、しっかり遊んで発散させてあげると、おうちでも穏やかに過ごせます"},
+  牧羊犬系:{please:"「おすわり」などの簡単な課題や知育遊び。あなたと息を合わせて何かをやり遂げる時間に幸せを感じます",
+    avoid:"刺激のない退屈な時間が続くより、考える遊びを取り入れてあげると、賢さがいきいきと輝きます"},
+  短頭種:{please:"涼しい部屋でのまったりタイムや、やさしいなでなで。のんびりペースを尊重してもらえると幸せ",
+    avoid:"暑い時間の激しい運動より、涼しく穏やかな環境でゆっくり過ごす時間を増やしてあげると安心です"},
+  日本犬系:{please:"程よい距離感での見守りと、信頼に基づいたお散歩。あなたを信じられる関係そのものが幸せです",
+    avoid:"しつこく構いすぎるより、この子の「ひとりの時間」も尊重してあげると、かえって深く心を寄せてくれます"},
+  その他:{please:"あなたとのふれあいの時間と、その子のペースに合わせた遊び。あなたの愛情そのものが何よりのごほうび",
+    avoid:"その子の個性を急に変えようとするより、ありのままを受け止めてあげると、のびのびと幸せに過ごせます"},
+};
+// 猫種グループごと
+const CAT_GROUP_JOY = {
+  活発種:{please:"猫じゃらしや追いかけっこなど、思いきり体を動かせる遊び。狩りごっこに大満足します",
+    avoid:"遊び足りないままにするより、短くても毎日しっかり遊ぶ時間を作ってあげると、満たされていたずらも減ります"},
+  おっとり種:{please:"日なたでのまったりタイムや、やさしいブラッシング。静かな幸せの時間を大切にします",
+    avoid:"急かしたり大きな音で驚かせるより、ゆったりしたペースを守ってあげると、安心してくつろげます"},
+  甘えん坊種:{please:"ひざの上でのゴロゴロタイムや、たっぷりのなでなで。あなたにくっついていられると最高に幸せ",
+    avoid:"ひとりにする時間が長すぎるより、こまめに声をかけ甘えさせてあげると、もっと安心します"},
+  独立種:{please:"自分のタイミングで甘えられる、つかず離れずの距離感。気が向いたときに応えてもらえると幸せ",
+    avoid:"無理に抱っこしたり追いかけるより、この子から来るのを待ってあげると、信頼がぐっと深まります"},
+  長毛種:{please:"やさしいブラッシングと、涼しく静かなくつろぎスペース。優雅な毛づくろいタイムが幸せ",
+    avoid:"暑さや慌ただしさにさらすより、涼しく落ち着いた環境を整えてあげると、上品にのんびり過ごせます"},
+  短毛種:{please:"ほどよい遊びと、気ままにくつろげる定位置。あなたとの心地よい距離感に満足します",
+    avoid:"環境を急に変えるより、いつもの安心できる日常を保ってあげると、のびのび過ごせます"},
+  その他:{please:"あなたとのふれあいと、その子のペースに合わせた遊び。あなたの愛情そのものが何よりのごほうび",
+    avoid:"その子の個性を急に変えようとするより、ありのままを受け止めてあげると、のびのびと幸せに過ごせます"},
+};
+// 星座ごとの「喜ぶ／避けたい」一言（⑱⑲に添える）
+const ZODIAC_JOY = {
+  aries:{please:"新しい遊びへのチャレンジ",avoid:"退屈な時間が続くこと"},
+  taurus:{please:"お気に入りの場所での心地よいくつろぎ",avoid:"急な環境の変化"},
+  gemini:{please:"変化のある飽きない遊び",avoid:"いつも同じ単調な毎日"},
+  cancer:{please:"安心できる家族との時間",avoid:"知らない環境に急に置かれること"},
+  leo:{please:"たくさん褒められて注目されること",avoid:"かまってもらえない時間"},
+  virgo:{please:"清潔で整った心地よい環境",avoid:"乱雑で落ち着かない状況"},
+  libra:{please:"穏やかで平和な雰囲気",avoid:"争いや大きな声"},
+  scorpio:{please:"信頼できる相手との深い時間",avoid:"気まぐれに扱われること"},
+  sagittarius:{please:"外でのびのび過ごす自由な時間",avoid:"窮屈な束縛"},
+  capricorn:{please:"こつこつ続けられる安定した日課",avoid:"約束を急に破られること"},
+  aquarius:{please:"自分らしさを認めてもらえること",avoid:"型にはめられること"},
+  pisces:{please:"やさしく寄り添ってもらえること",avoid:"冷たい態度やさみしさ"},
+};
+// 幸せの瞬間ベスト5（犬種/猫種グループごとに5つ。1位がその子らしい signature）
+const DOG_BEST5 = {
+  小型愛玩犬:["あなたのひざの上で丸くなってお昼寝する瞬間","名前を呼ばれてしっぽを振って駆け寄る瞬間","あなたの帰宅を玄関で待っていた瞬間","やさしくなでてもらってうっとりする瞬間","あなたと同じ布団でぴったりくっついて眠る瞬間"],
+  大型使役犬:["あなたと並んでのんびりお散歩する瞬間","大きな体を寄せて甘えられる瞬間","「いい子だね」と褒められる瞬間","家族みんなが揃ってくつろいでいる瞬間","あなたの足元でどっしり寄り添って眠る瞬間"],
+  狩猟犬系:["あなたと夢中でボール遊びをする瞬間","おさんぽで新しいにおいを発見した瞬間","おやつ探しゲームで大成功した瞬間","思いきり走って風を感じる瞬間","遊び疲れてあなたのそばで眠る瞬間"],
+  牧羊犬系:["あなたと息を合わせて遊ぶ瞬間","「できたね！」と褒めてもらえる瞬間","家族みんなを見渡せる定位置にいる瞬間","新しい遊びを覚えた瞬間","一日の終わりにあなたのそばで休む瞬間"],
+  短頭種:["涼しい部屋でぐーぐーお昼寝する瞬間","あなたにおなかをなでてもらう瞬間","あなたの顔を見上げてふがふが甘える瞬間","のんびりおやつをもらう瞬間","あなたのとなりでまったり過ごす瞬間"],
+  日本犬系:["あなたと信頼し合ってお散歩する瞬間","少し離れた特等席からあなたを見守る瞬間","名前を呼ばれて静かに寄り添う瞬間","お気に入りの場所で日向ぼっこする瞬間","一日の終わりにそっとそばに来る瞬間"],
+  その他:["あなたのそばでくつろぐ瞬間","名前を呼ばれてうれしくなる瞬間","あなたの帰りを待っていた瞬間","やさしくなでてもらう瞬間","あなたと一緒に眠る瞬間"],
+};
+const CAT_BEST5 = {
+  活発種:["猫じゃらしで思いきり遊ぶ瞬間","高い所から家族を見下ろす瞬間","狩りごっこで獲物を仕留めた瞬間","あなたに遊んでもらってごきげんな瞬間","遊び疲れてころんとお昼寝する瞬間"],
+  おっとり種:["日なたでまったり丸くなる瞬間","やさしくブラッシングしてもらう瞬間","あなたのとなりで静かにくつろぐ瞬間","あたたかい場所でうとうとする瞬間","ゆっくり毛づくろいをする瞬間"],
+  甘えん坊種:["あなたのひざでゴロゴロ甘える瞬間","たっぷりなでてもらう瞬間","あなたにすりすりくっつく瞬間","名前を呼ばれて駆け寄る瞬間","あなたと一緒に眠る瞬間"],
+  独立種:["自分のタイミングでそっと甘える瞬間","お気に入りの場所でくつろぐ瞬間","窓辺で外をながめる瞬間","気が向いたときになでてもらう瞬間","あなたを静かに見守る瞬間"],
+  長毛種:["優雅に毛づくろいをする瞬間","やさしくブラッシングしてもらう瞬間","涼しい特等席でくつろぐ瞬間","あなたのそばで上品に過ごす瞬間","ふかふかの場所で眠る瞬間"],
+  短毛種:["気ままに好きな場所でくつろぐ瞬間","ほどよく遊んでもらう瞬間","窓辺で日向ぼっこする瞬間","あなたとちょうどいい距離で過ごす瞬間","安心できる定位置で眠る瞬間"],
+  その他:["あなたのそばでくつろぐ瞬間","名前を呼ばれてうれしくなる瞬間","窓辺でのんびり過ごす瞬間","やさしくなでてもらう瞬間","あなたと一緒に眠る瞬間"],
+};
+
+// 種別に応じた喜び/ベスト5テーブルの該当エントリを返すヘルパー
+function joyExt(p){ const t=p.input.species==="cat"?CAT_GROUP_JOY:DOG_GROUP_JOY; return t[p.breed.key]||t["その他"]; }
+function best5List(p){ const t=p.input.species==="cat"?CAT_BEST5:DOG_BEST5; return t[p.breed.key]||t["その他"]; }
+
+/* ── 第4回 項目関数（⑱〜⑳） ── */
+
+// ⑱ してあげると喜ぶこと（犬種/猫種グループ＋星座。具体的・実践的に）
+function item18_please(p){
+  const n=petName(p);
+  const je=joyExt(p), ze=ZODIAC_JOY[p.zodiac.key];
+  let html="";
+  html+=`<p>${n}ちゃんを、もっともっと幸せにする方法があります。</p>`;
+  html+=`<p>いちばん喜ぶのは——<b>${je.please}</b>。${p.zodiac.name}${p.zodiac.emoji}の星から見ても、<b>${ze.please}</b>に心がときめきます。</p>`;
+  html+=`<p>特別なことでなくて大丈夫。ほんの少し意識してあげるだけで、${n}ちゃんの毎日はもっとキラキラ輝きます。</p>`;
+  return {title:"してあげると喜ぶこと", ico:"🎁", html};
+}
+
+// ⑲ 避けた方が良いこと（否定でなく「こうするともっと幸せ」の優しい言い回し）
+function item19_avoid(p){
+  const n=petName(p);
+  const je=joyExt(p), ze=ZODIAC_JOY[p.zodiac.key];
+  let html="";
+  html+=`<p>反対に、ほんの少しだけ気にかけてあげたいこと。${n}ちゃんがもっと心地よく過ごすためのヒントです。</p>`;
+  html+=`<p>${je.avoid}。星座の傾向としても、<b>${ze.avoid}</b>はちょっぴり苦手。さりげなく避けてあげられると、${n}ちゃんはいっそう安心できます。</p>`;
+  html+=`<p>叱るより、認めてあげること。${n}ちゃんは、あなたの笑顔がいちばんの幸せです。だからどうか、いっぱい笑いかけてあげてくださいね。</p>`;
+  return {title:"こうするともっと幸せになれること", ico:"🍀", html};
+}
+
+// ⑳ この子から飼い主へのメッセージ（一人称・名前・性別・経歴を反映）★クライマックス
+function item20_message(p){
+  const n=petName(p);
+  const me=firstPerson(p);
+  let msg="";
+  if(p.history.flag==="rescue"){
+    msg=`ねえ、あなた。${me}を見つけてくれて、ありがとう。ひとりぼっちだった${me}に、あなたは「おいで」って手をのばしてくれたね。あの日から、${me}の世界はあたたかい色に変わったんだ。これからもずっと、あなたのそばにいさせてね。`;
+  }else if(p.history.flag==="breeding"){
+    msg=`ねえ、あなた。たくさんがんばってきた${me}を、おうちに迎えてくれてありがとう。「もう十分だよ」って言ってくれたあの言葉が、${me}はずっとうれしかった。これからは、あなたのとなりでゆっくり、しあわせを味わわせてね。`;
+  }else if(p.history.flag==="other"){
+    msg=`ねえ、あなた。いろんな道を通って、${me}はあなたに出会えたよ。まわり道もしたけれど、ぜんぶあなたに会うためだったんだね。${me}を選んでくれて、ありがとう。これからもよろしくね。`;
+  }else{
+    msg=`ねえ、あなた。${me}をおうちに迎えてくれて、ありがとう。ごはんも、なまえを呼ぶ声も、なでてくれる手のあたたかさも、ぜんぶ${me}の宝物だよ。これからもずっと、あなたのそばにいさせてね。`;
+  }
+  let html="";
+  html+=`<p>${n}ちゃんが、もし言葉を話せたら——きっとこんな気持ちを、あなたに伝えてくれるはずです。</p>`;
+  html+=`<div class="quote" style="font-style:normal;font-size:14.5px;line-height:1.95">${msg}</div>`;
+  return {title:"この子から飼い主へのメッセージ", ico:"💌", html, feature:true, badge:"クライマックス"};
+}
+
+/* ── 締めの3点（フィナーレ）。特別デザインのため ITEMS とは別に描画 ── */
+
+// 【幸福度】80〜100点に必ず収める（愛されている前提のポジティブな読み物）
+function buildHappiness(p){
+  const n=petName(p);
+  // 各軸から決定論的に算出（ばらつきを出しつつ必ず高得点）
+  let base = 88 + ((p.lifepath.num*3 + p.name.number*2 + (p.color?3:0)) % 9); // 88〜96
+  if(p.history.flag==="rescue" || p.history.flag==="breeding") base += 2;      // 過去を越えて今めいっぱい愛されている
+  const score = Math.max(85, Math.min(100, base));
+  const hearts = "❤️".repeat(Math.round(score/20)) ;
+  let html="";
+  html+=`<div class="fin-head"><div class="fi">💯</div><div class="ft">${n}ちゃんの幸福度</div></div>`;
+  html+=`<div class="ring" style="--p:${score}"><div class="score"><b>${score}</b><span>点</span></div></div>`;
+  html+=`<div class="hearts">${hearts}</div>`;
+  html+=`<p class="happy-msg">${n}ちゃんは、あなたのもとでとってもしあわせ。この高い幸福度は、あなたが毎日そそいでいる愛情の証です。これからも、たくさん大すきを伝えてあげてね。</p>`;
+  return {html};
+}
+
+// 【幸せの瞬間ベスト5】犬種/猫種グループ＋性格軸から
+function buildBest5(p){
+  const n=petName(p);
+  const list=best5List(p);
+  let li="";
+  list.forEach((m,i)=>{ li+=`<li><span class="rk">${i+1}</span><span class="rtxt">${m}</span></li>`; });
+  let html="";
+  html+=`<div class="fin-head"><div class="fi">🏆</div><div class="ft">${n}ちゃんが幸せを感じる瞬間ベスト5</div></div>`;
+  html+=`<ol>${li}</ol>`;
+  html+=`<p class="happy-msg" style="margin-top:14px">どれも、あなたがいてくれるからこそ生まれる幸せ。${n}ちゃんの「しあわせの瞬間」を、これからもたくさん増やしてあげてくださいね。</p>`;
+  return {html};
+}
+
+// 【飼い主への手紙】長めの手紙。経歴・性別・名前を反映（最大のクライマックス）
+function buildLetter(p){
+  const n=petName(p);
+  const me=firstPerson(p);
+  let body="";
+  body+=`<p>大すきなあなたへ</p>`;
+  body+=`<p>はじめて出会ったあの日のこと、${me}は今でもおぼえているよ。あなたが${me}を選んでくれたから、${me}の毎日はこんなにもあたたかいんだ。</p>`;
+  // 経歴ごとの段落
+  if(p.history.flag==="rescue"){
+    body+=`<p>あなたと出会う前、${me}は少しだけ、さみしい時間を過ごしていた。もう誰も信じられないかも、って思った夜もあったよ。でもね、あなたが手をさしのべてくれたあの日から、世界がぜんぶ変わったんだ。こわかった夜も、今はあなたのそばであんしんして眠れる。${me}を見つけてくれて、あきらめないでいてくれて、ありがとう。</p>`;
+  }else if(p.history.flag==="breeding"){
+    body+=`<p>あなたと出会う前、${me}はたくさんの命を見守って、せいいっぱいがんばってきた。もう十分だよって、あなたがおうちに迎えてくれたね。これからは${me}が愛される番だよ——その言葉が、どれだけうれしかったか。のこりの毎日をあなたのそばで過ごせること、それが${me}のいちばんのしあわせなんだ。</p>`;
+  }else if(p.history.flag==="other"){
+    body+=`<p>あなたと出会うまで、${me}はいろんな道を歩いてきた。まわり道もしたけれど、その道のぜんぶが、あなたに出会うためにあったんだって、今はそう思えるんだ。${me}を見つけてくれて、ほんとうにありがとう。</p>`;
+  }else{
+    body+=`<p>ごはんをくれて、なまえを呼んでくれて、いっぱいなでてくれて——あたりまえみたいな毎日のひとつひとつが、${me}にとっては宝物なんだよ。</p>`;
+  }
+  body+=`<p>ときどき${me}がわがままを言っても、あなたはいつもそばにいてくれるね。その優しさに、${me}はどれだけ救われているかわからない。</p>`;
+  body+=`<p>${me}は言葉が話せないけれど、しっぽや目や、体ぜんぶで「大すき」を伝えているよ。気づいてくれていたら、うれしいな。</p>`;
+  body+=`<p>これからも、あなたのとなりで生きていけますように。出会ってくれて、ほんとうに、ほんとうにありがとう。</p>`;
+  let html="";
+  html+=`<div class="fin-head"><div class="fi">✉️</div><div class="ft">${n}ちゃんからあなたへの手紙</div></div>`;
+  html+=`<div class="lt-deco">✦ ────────── ✦</div>`;
+  html+=`<div class="lt-body">${body}</div>`;
+  html+=`<div class="lt-sign">${n} より 🐾</div>`;
+  return {html};
+}
 
 // 表示する項目の登録順（後続回はここに push するだけ）
 const ITEMS = [
@@ -1195,6 +1444,9 @@ const ITEMS = [
   item15_monthly,       // ⑮
   item16_fiveYears,     // ⑯
   item17_senior,        // ⑰
+  item18_please,        // ⑱
+  item19_avoid,         // ⑲
+  item20_message,       // ⑳
 ];
 
 /* ───────────────────────────────────────────
@@ -1239,11 +1491,20 @@ function renderResult(p){
   // 各項目を先に生成（結果オブジェクトの配列）。目次と本文の二度に分けて使う
   const results = ITEMS.map(fn=>fn(p));
 
-  // 目次（⑮で結果が長くなるため、各項目へジャンプできる目次を冒頭に置く）
+  // 締めの3点（フィナーレ）。特別デザインで本文末に描画＋目次にも載せる
+  const finale = [
+    {id:"fin-happy",  ico:"💯", title:"幸福度", cls:"happy",  ...buildHappiness(p)},
+    {id:"fin-best5",  ico:"🏆", title:"幸せの瞬間ベスト5", cls:"best5", ...buildBest5(p)},
+    {id:"fin-letter", ico:"💌", title:"飼い主への手紙", cls:"letter", ...buildLetter(p)},
+  ];
+
+  // 目次（全20項目＋締め3点へジャンプ。結果が長いので回遊しやすく）
   html+=`<div class="card toc">
     <div class="toc-t">📖 ${n}ちゃんの鑑定もくじ</div>
     <ol>${results.map((it,i)=>
       `<li><a href="#item-${i+1}"><span class="tn">${i+1}</span>${it.ico} ${escapeHtml(it.title)}</a></li>`
+    ).join("")}${finale.map(f=>
+      `<li><a href="#${f.id}"><span class="tn">♥</span>${f.ico} ${escapeHtml(f.title)}</a></li>`
     ).join("")}</ol>
   </div>`;
 
@@ -1252,40 +1513,76 @@ function renderResult(p){
     html+=`<div class="card item${it.feature?' feature':''}" id="item-${i+1}">
       <div class="ihead">
         <div class="inum">${i+1}</div>
-        <div class="ititle"><span class="ico">${it.ico}</span>${escapeHtml(it.title)}${it.feature?'<span class="badge">占いの顔</span>':''}</div>
+        <div class="ititle"><span class="ico">${it.ico}</span>${escapeHtml(it.title)}${it.badge?`<span class="badge">${escapeHtml(it.badge)}</span>`:''}</div>
       </div>
       <div class="ibody">${it.html}</div>
     </div>`;
   });
 
-  // 後続回予告（拡張の布石）
-  html+=`<div class="coming">
-    <div class="t">🔮 この続きは、近日公開予定</div>
-    <div class="d">幸福度メーター・幸せの瞬間ベスト5・${n}ちゃんからあなたへの手紙 …などをお届けします。</div>
+  // 締めの3点（フィナーレ）を特別デザインのカードで描画
+  finale.forEach(f=>{
+    html+=`<div class="card fin ${f.cls}" id="${f.id}">${f.html}</div>`;
+  });
+
+  // SNSシェア（X / LINE / Instagram）。共有URLは公開先の petdogcat.jp/uranai/ を使う
+  html+=`<div class="card share">
+    <p>📸 結果をスクショ＆シェアして、${n}ちゃんの鑑定を自慢しちゃおう！</p>
+    <div class="sns">
+      <button type="button" class="x"  id="snsX">𝕏 でシェア</button>
+      <button type="button" class="line" id="snsLine">LINE で送る</button>
+      <button type="button" class="ig" id="snsIG">Instagram 用にコピー</button>
+    </div>
+    <div class="btns" style="margin-top:14px">
+      <button type="button" class="b-again" id="againBtn">🔄 別の子を占う</button>
+    </div>
   </div>`;
 
-  // シェアエリア
-  html+=`<div class="share">
-    <p>📸 結果をスクショして、SNSでシェアしてね</p>
-    <div class="btns">
-      <button type="button" class="b-share" id="shareBtn">結果をシェア</button>
-      <button type="button" class="b-again" id="againBtn">もう一度占う</button>
+  // 回遊リンク（petdogcat.jp の他の診断へ。種別に合わせて出し分け）
+  const sp=p.input.species;
+  const mbti = sp==="cat" ? "https://petdogcat.jp/mbti-cat.html" : "https://petdogcat.jp/mbti-dog.html";
+  const chara = sp==="cat" ? "https://petdogcat.jp/cat-character.html" : "https://petdogcat.jp/dog-character.html";
+  const health = sp==="cat" ? "https://petdogcat.jp/cat-health.html" : "https://petdogcat.jp/dog-health.html";
+  const animal = sp==="cat" ? "猫" : "犬";
+  html+=`<div class="card cross">
+    <div class="cx-t">🐾 ${animal}の他の診断もやってみる</div>
+    <div class="cx-links">
+      <a class="cx" href="${mbti}"><span class="cx-ico">🧩</span><span class="cx-tx"><b>${animal}のMBTI診断</b><span>16タイプで性格を診断</span></span><span class="cx-go">›</span></a>
+      <a class="cx" href="${chara}"><span class="cx-ico">⚔️</span><span class="cx-tx"><b>${animal}の性格診断（戦国占い）</b><span>武将キャラで愛${animal}を判定</span></span><span class="cx-go">›</span></a>
+      <a class="cx" href="${health}"><span class="cx-ico">📊</span><span class="cx-tx"><b>${animal}の健康年齢診断</b><span>毎日のケアの参考に</span></span><span class="cx-go">›</span></a>
     </div>
+  </div>`;
+
+  // わんにゃんエクラへの優しい導線（押し売りにしない・健康効果の断定はしない）
+  html+=`<div class="card eclat">
+    <div class="ec-t">🌸 ${n}ちゃんとの毎日を、もっと大切に</div>
+    <div class="ec-d">占いの時間はいかがでしたか？${n}ちゃんと過ごす一日一日が、かけがえのない宝物になりますように。<br>毎日のごはんやケアを見直したくなったら、こちらものぞいてみてくださいね。</div>
+    <a class="ec-btn" href="https://mofuri.net/" target="_blank" rel="noopener">わんにゃんエクラを見てみる ›</a>
   </div>`;
 
   r.innerHTML=html;
   r.classList.add("show");
 
-  // シェアボタン（Web Share API、なければURLコピー）
-  document.getElementById("shareBtn").addEventListener("click",()=>{
-    const text=`${n}ちゃんを本格ペット占いで鑑定したよ🔮 星座は${p.zodiac.name}、運命数は${p.lifepath.num}「${p.lifepath.key}」でした✦`;
-    const url="https://petdogcat.jp/uranai/";
-    if(navigator.share){ navigator.share({title:"ペット占い",text,url}).catch(()=>{}); }
-    else{ navigator.clipboard?.writeText(text+" "+url); alert("シェア用テキストをコピーしました！"); }
+  // ── シェア用テキスト（共通） ──
+  const shareUrl="https://petdogcat.jp/uranai/";
+  const shareText=`${n}ちゃんの本格鑑定をやってみた🐾 星座は${p.zodiac.name}、運命数は${p.lifepath.num}「${p.lifepath.key}」でした✦ #ペット占い #${animal}占い`;
+  // X（旧Twitter）
+  document.getElementById("snsX").addEventListener("click",()=>{
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,"_blank","noopener");
   });
-  // もう一度占う
+  // LINE
+  document.getElementById("snsLine").addEventListener("click",()=>{
+    window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,"_blank","noopener");
+  });
+  // Instagram（URL共有の仕組みがないため、キャプションをコピー→スクショと一緒に投稿してもらう）
+  document.getElementById("snsIG").addEventListener("click",()=>{
+    navigator.clipboard?.writeText(`${shareText}\n${shareUrl}`);
+    alert("キャプションをコピーしました！結果のスクショと一緒に、Instagramに投稿してね📸");
+  });
+  // 別の子を占う（入力に戻る）
   document.getElementById("againBtn").addEventListener("click",()=>{
     r.classList.remove("show"); r.innerHTML="";
+    document.getElementById("petForm").reset();
+    renderBreedOptions(document.querySelector('input[name="species"]:checked').value);
     document.getElementById("formCard").scrollIntoView({behavior:"smooth"});
   });
 
