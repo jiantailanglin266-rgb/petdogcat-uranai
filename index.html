@@ -375,6 +375,28 @@ footer{text-align:center;padding:34px var(--pad);color:var(--page-txs);font-size
 .persona-share-btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(131,103,199,.5)}
 .persona-share-btn:active{transform:translateY(0)}
 .persona-share-btn.busy{opacity:.6;pointer-events:none}
+.b-share.busy{opacity:.6;pointer-events:none}
+.share-hint{font-size:11px;color:var(--ink-s);margin-top:10px;line-height:1.6}
+
+/* 共有モーダル（PC等：画像プレビュー＋保存＋コピー＋各SNS） */
+.share-modal{position:fixed;inset:0;z-index:1000;background:rgba(20,8,40,.78);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto;animation:rise .3s ease both}
+.share-modal__box{background:#fff;border-radius:18px;max-width:380px;width:100%;padding:18px;text-align:center;
+  box-shadow:0 24px 70px rgba(15,6,35,.6)}
+.share-modal__box h3{font-size:15px;font-weight:900;color:var(--orange-d);margin-bottom:4px}
+.share-modal__step{font-size:11.5px;color:var(--ink-s);margin-bottom:12px;line-height:1.6}
+.share-modal__box img{width:100%;max-width:300px;border-radius:14px;border:1px solid var(--line);display:block;margin:0 auto 14px}
+.share-modal__row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.share-modal__row button,.share-modal__row a{flex:1;min-width:130px;font-family:inherit;font-weight:800;font-size:13px;
+  padding:12px;border-radius:11px;cursor:pointer;border:none;text-decoration:none;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
+.share-modal__row button:hover,.share-modal__row a:hover{transform:translateY(-2px);filter:brightness(1.04)}
+.sm-save{background:linear-gradient(120deg,var(--orange-d),var(--orange));color:#fff}
+.sm-copy{background:var(--cream2);color:var(--orange-d);border:1.5px solid var(--line)}
+.sm-x{background:#111;color:#fff}
+.sm-line{background:#06C755;color:#fff}
+.sm-ig{background:linear-gradient(45deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888);color:#fff}
+.share-modal__close{margin-top:14px;background:none;border:none;color:var(--ink-s);font-weight:700;font-size:12.5px;cursor:pointer}
 
 /* ═══ SEO/LLMO 用テキストセクション ═══ */
 .seo-content h2{font-size:18px;font-weight:900;color:var(--orange-d);margin:6px 0 10px}
@@ -1646,104 +1668,138 @@ function wrapText(ctx,text,x,y,maxW,lh){
   return yy;
 }
 
-async function sharePersonality(p, btn){
+// 共有画像（顔写真＋性格診断）を生成し {blob,dataUrl,file,text,url} を返す
+async function buildShareBlob(p){
+  await (document.fonts && document.fonts.ready);   // Webフォント反映待ち
+  const n=petName(p);
+  const W=1080,H=1080;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const ctx=cv.getContext("2d");
+
+  // 背景：紫の夜空グラデ
+  const g=ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,"#241544"); g.addColorStop(.55,"#3a2270"); g.addColorStop(1,"#1b1030");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // 星を散りばめる
+  ctx.fillStyle="rgba(232,193,91,.9)";
+  for(let i=0;i<60;i++){
+    const sx=(i*131%W), sy=((i*97+i*i*13)%H), sr=(i%5===0)?3:1.6;
+    ctx.globalAlpha=.3+(i%6)/10; ctx.beginPath(); ctx.arc(sx,sy,sr,0,7); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  // 外枠（ゴールド細線）
+  ctx.strokeStyle="rgba(232,193,91,.55)"; ctx.lineWidth=4;
+  ctx.strokeRect(24,24,W-48,H-48);
+
+  // ヘッダー：タイトル
+  ctx.textAlign="center";
+  ctx.fillStyle="#E8C15B"; ctx.font="700 34px 'Noto Sans JP',sans-serif";
+  ctx.fillText("🔮 ペット占い ｜ 性格診断", W/2, 96);
+
+  // 顔写真（円形・ゴールドリング）。なければ装飾サークル
+  const cx=W/2, cy=300, R=140;
+  ctx.save();
+  const ring=ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
+  ring.addColorStop(0,"#E8C15B"); ring.addColorStop(.5,"#B9A5E8"); ring.addColorStop(1,"#F4A8C8");
+  ctx.fillStyle=ring; ctx.beginPath(); ctx.arc(cx,cy,R+12,0,7); ctx.fill();
+  ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(cx,cy,R+5,0,7); ctx.fill();
+  const img = p.input.photo ? await loadImage(p.input.photo) : null;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.closePath(); ctx.clip();
+  if(img){
+    const s=Math.max((2*R)/img.width,(2*R)/img.height);
+    const dw=img.width*s, dh=img.height*s;
+    ctx.drawImage(img, cx-dw/2, cy-dh/2, dw, dh);
+  }else{
+    ctx.fillStyle="#3a2270"; ctx.fillRect(cx-R,cy-R,2*R,2*R);
+    ctx.fillStyle="#E8C15B"; ctx.font="120px serif"; ctx.textBaseline="middle";
+    ctx.fillText(p.input.species==="cat"?"🐱":"🐶", cx, cy+6); ctx.textBaseline="alphabetic";
+  }
+  ctx.restore();
+
+  // 名前
+  ctx.fillStyle="#FFF6E6"; ctx.font="700 56px 'Noto Serif JP',serif";
+  ctx.fillText(`${n} ちゃん`, W/2, 540);
+
+  // 軸チップ（星座／運命数／タイプ）
+  ctx.fillStyle="#D9CCF5"; ctx.font="600 30px 'Noto Sans JP',sans-serif";
+  ctx.fillText(`${p.zodiac.name}${p.zodiac.emoji} ・ 運命数 ${p.lifepath.num}「${p.lifepath.key}」`, W/2, 596);
+
+  // 性格サマリー（①の要点を簡潔に）。中央寄せ折り返し
+  const summary=`${n}ちゃんは${p.breed.label}。${p.zodiac.trait}。`;
+  ctx.fillStyle="#FBF7FF"; ctx.font="400 33px 'Noto Sans JP',sans-serif";
+  (function centerWrap(text,y,maxW,lh){
+    const chars=[...text]; let line="", yy=y; const lines=[];
+    for(const ch of chars){ const t=line+ch; if(ctx.measureText(t).width>maxW && line){ lines.push(line); line=ch; } else line=t; }
+    if(line) lines.push(line);
+    lines.slice(0,5).forEach((ln,i)=>ctx.fillText(ln, W/2, yy+i*lh));
+  })(summary, 690, W-220, 50);
+
+  // フッター（ブランド／URL）
+  ctx.fillStyle="#E8C15B"; ctx.font="700 30px 'Noto Sans JP',sans-serif";
+  ctx.fillText("わんにゃんチェッカー", W/2, 960);
+  ctx.fillStyle="#B9A5E8"; ctx.font="500 26px 'Noto Sans JP',sans-serif";
+  ctx.fillText("petdogcat.jp/uranai", W/2, 1000);
+
+  const blob=await new Promise(r=>cv.toBlob(r,"image/png",0.92));
+  const dataUrl=cv.toDataURL("image/png");
+  const file=new File([blob],`${n}-uranai.png`,{type:"image/png"});
+  const text=`${n}ちゃんの性格診断🔮 ${p.zodiac.name}・運命数${p.lifepath.num}「${p.lifepath.key}」#ペット占い #わんにゃんチェッカー`;
+  const url="https://petdogcat.jp/uranai/";
+  return {blob,dataUrl,file,text,url};
+}
+
+// スマホ＝ネイティブ共有（画像つきで全SNSへ）／PC＝共有モーダル（保存＋コピー＋各SNS）
+async function shareResult(p, btn){
+  const orig = btn ? btn.textContent : "";
   try{
     if(btn){ btn.classList.add("busy"); btn.textContent="🎨 画像を作成中…"; }
-    await (document.fonts && document.fonts.ready);   // Webフォント反映待ち
-    const n=petName(p);
-    const W=1080,H=1080;
-    const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
-    const ctx=cv.getContext("2d");
-
-    // 背景：紫の夜空グラデ
-    const g=ctx.createLinearGradient(0,0,W,H);
-    g.addColorStop(0,"#241544"); g.addColorStop(.55,"#3a2270"); g.addColorStop(1,"#1b1030");
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    // 星を散りばめる（疑似ランダム：indexベースで毎回同じ配置）
-    ctx.fillStyle="rgba(232,193,91,.9)";
-    for(let i=0;i<60;i++){
-      const sx=(i*131%W), sy=((i*97+i*i*13)%H), sr=(i%5===0)?3:1.6;
-      ctx.globalAlpha=.3+(i%6)/10; ctx.beginPath(); ctx.arc(sx,sy,sr,0,7); ctx.fill();
-    }
-    ctx.globalAlpha=1;
-    // 外枠（ゴールド細線）
-    ctx.strokeStyle="rgba(232,193,91,.55)"; ctx.lineWidth=4;
-    ctx.strokeRect(24,24,W-48,H-48);
-
-    // ヘッダー：タイトル
-    ctx.textAlign="center";
-    ctx.fillStyle="#E8C15B"; ctx.font="700 34px 'Noto Sans JP',sans-serif";
-    ctx.fillText("🔮 ペット占い ｜ 性格診断", W/2, 96);
-
-    // 顔写真（円形・ゴールドリング）。なければ装飾サークル
-    const cx=W/2, cy=300, R=140;
-    ctx.save();
-    // リング
-    const ring=ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
-    ring.addColorStop(0,"#E8C15B"); ring.addColorStop(.5,"#B9A5E8"); ring.addColorStop(1,"#F4A8C8");
-    ctx.fillStyle=ring; ctx.beginPath(); ctx.arc(cx,cy,R+12,0,7); ctx.fill();
-    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(cx,cy,R+5,0,7); ctx.fill();
-    const img = p.input.photo ? await loadImage(p.input.photo) : null;
-    ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.closePath(); ctx.clip();
-    if(img){
-      // cover で円に収める
-      const s=Math.max((2*R)/img.width,(2*R)/img.height);
-      const dw=img.width*s, dh=img.height*s;
-      ctx.drawImage(img, cx-dw/2, cy-dh/2, dw, dh);
+    const s=await buildShareBlob(p);
+    if(navigator.canShare && navigator.canShare({files:[s.file]})){
+      try{ await navigator.share({files:[s.file], text:s.text, url:s.url}); }
+      catch(e){ if(e && e.name==="AbortError") return; showShareModal(p,s); }
     }else{
-      ctx.fillStyle="#3a2270"; ctx.fillRect(cx-R,cy-R,2*R,2*R);
-      ctx.fillStyle="#E8C15B"; ctx.font="120px serif"; ctx.textBaseline="middle";
-      ctx.fillText(p.input.species==="cat"?"🐱":"🐶", cx, cy+6); ctx.textBaseline="alphabetic";
-    }
-    ctx.restore();
-
-    // 名前
-    ctx.fillStyle="#FFF6E6"; ctx.font="700 56px 'Noto Serif JP',serif";
-    ctx.fillText(`${n} ちゃん`, W/2, 540);
-
-    // 軸チップ（星座／運命数／タイプ）
-    ctx.fillStyle="#D9CCF5"; ctx.font="600 30px 'Noto Sans JP',sans-serif";
-    ctx.fillText(`${p.zodiac.name}${p.zodiac.emoji} ・ 運命数 ${p.lifepath.num}「${p.lifepath.key}」`, W/2, 596);
-
-    // 性格サマリー（①の要点を簡潔に）。中央寄せ折り返し
-    const summary=`${n}ちゃんは${p.breed.label}。${p.zodiac.trait}。`;
-    ctx.fillStyle="#FBF7FF"; ctx.font="400 33px 'Noto Sans JP',sans-serif";
-    // 中央寄せ折り返し用に簡易行分割
-    (function centerWrap(text,y,maxW,lh){
-      const chars=[...text]; let line="", yy=y; const lines=[];
-      for(const ch of chars){ const t=line+ch; if(ctx.measureText(t).width>maxW && line){ lines.push(line); line=ch; } else line=t; }
-      if(line) lines.push(line);
-      lines.slice(0,5).forEach((ln,i)=>ctx.fillText(ln, W/2, yy+i*lh));
-    })(summary, 690, W-220, 50);
-
-    // フッター（ブランド／URL）
-    ctx.fillStyle="#E8C15B"; ctx.font="700 30px 'Noto Sans JP',sans-serif";
-    ctx.fillText("わんにゃんチェッカー", W/2, 960);
-    ctx.fillStyle="#B9A5E8"; ctx.font="500 26px 'Noto Sans JP',sans-serif";
-    ctx.fillText("petdogcat.jp/uranai", W/2, 1000);
-
-    // PNG化
-    const blob=await new Promise(r=>cv.toBlob(r,"image/png",0.92));
-    const file=new File([blob],`${n}-uranai-personality.png`,{type:"image/png"});
-    const text=`${n}ちゃんの性格診断🔮 ${p.zodiac.name}・運命数${p.lifepath.num}「${p.lifepath.key}」#ペット占い #わんにゃんチェッカー`;
-    const url="https://petdogcat.jp/uranai/";
-
-    // 画像つきシェア（LINE/X/インスタ等）。対応端末はネイティブ共有シート
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], text, url});
-    }else{
-      // 非対応：画像をダウンロード＋テキストをコピー
-      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name;
-      document.body.appendChild(a); a.click(); a.remove();
-      try{ await navigator.clipboard.writeText(`${text}\n${url}`); }catch(e){}
-      alert("性格診断の画像を保存しました📷\nLINE・X・Instagramの投稿に添付してシェアしてね！（キャプションもコピー済み）");
+      showShareModal(p,s);   // PC等：ネイティブ画像共有が無いのでモーダル
     }
   }catch(e){
-    if(e && e.name==="AbortError"){ /* ユーザーがシェアをキャンセル：何もしない */ }
-    else { alert("画像の作成に失敗しました。お手数ですが画面のスクリーンショットでシェアしてください🙏"); }
+    alert("画像の作成に失敗しました。お手数ですが画面のスクリーンショットでシェアしてください🙏");
   }finally{
-    if(btn){ btn.classList.remove("busy"); btn.textContent="📷 この性格診断を画像でシェア（LINE・X・インスタ）"; }
+    if(btn){ btn.classList.remove("busy"); btn.textContent=orig; }
   }
+}
+
+// PC向け共有モーダル：生成画像のプレビュー＋保存＋キャプションコピー＋各SNSを開く
+function showShareModal(p, s){
+  const n=petName(p);
+  const ov=document.createElement("div"); ov.className="share-modal";
+  ov.innerHTML=`<div class="share-modal__box">
+    <h3>📷 ${escapeHtml(n)}ちゃんの鑑定をシェア</h3>
+    <div class="share-modal__step">① 画像を保存 → ② 投稿先を開いて画像を添付（キャプションは自動コピー）</div>
+    <img src="${s.dataUrl}" alt="${escapeHtml(n)}ちゃんのシェア画像">
+    <div class="share-modal__row">
+      <button type="button" class="sm-save">📥 画像を保存</button>
+      <button type="button" class="sm-copy">📋 キャプションをコピー</button>
+    </div>
+    <div class="share-modal__row" style="margin-top:8px">
+      <a class="sm-x"  target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(s.text)}&url=${encodeURIComponent(s.url)}">𝕏 を開く</a>
+      <a class="sm-line" target="_blank" rel="noopener" href="https://line.me/R/share?text=${encodeURIComponent(s.text+" "+s.url)}">LINE を開く</a>
+      <button type="button" class="sm-ig">Instagram</button>
+    </div>
+    <button type="button" class="share-modal__close">閉じる</button>
+  </div>`;
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  const doCopy=async()=>{ try{ await navigator.clipboard.writeText(`${s.text}\n${s.url}`); }catch(e){} };
+  ov.addEventListener("click",(e)=>{ if(e.target===ov) close(); });
+  ov.querySelector(".share-modal__close").addEventListener("click",close);
+  ov.querySelector(".sm-save").addEventListener("click",()=>{
+    const a=document.createElement("a"); a.href=URL.createObjectURL(s.blob); a.download=s.file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  ov.querySelector(".sm-copy").addEventListener("click",async()=>{ await doCopy(); alert("キャプションをコピーしました📋"); });
+  // 各SNSを開く前にキャプションを自動コピー（投稿欄にすぐ貼れる）
+  ov.querySelector(".sm-x").addEventListener("click",doCopy);
+  ov.querySelector(".sm-line").addEventListener("click",doCopy);
+  ov.querySelector(".sm-ig").addEventListener("click",async()=>{ await doCopy(); alert("キャプションをコピーしました📋\n保存した画像をInstagramアプリで投稿してね！"); });
 }
 
 // 犬種/猫種セレクトを種別に応じて切り替え
@@ -1816,13 +1872,12 @@ function renderResult(p){
 
   // SNSシェア（X / LINE / Instagram）。共有URLは公開先の petdogcat.jp/uranai/ を使う
   html+=`<div class="card share">
-    <p>📸 結果をスクショ＆シェアして、${n}ちゃんの鑑定を自慢しちゃおう！</p>
-    <div class="sns">
-      <button type="button" class="x"  id="snsX">𝕏 でシェア</button>
-      <button type="button" class="line" id="snsLine">LINE で送る</button>
-      <button type="button" class="ig" id="snsIG">Instagram 用にコピー</button>
+    <p>📷 ${n}ちゃんの「顔写真＋性格診断」を1枚の画像にしてシェアできます</p>
+    <div class="btns">
+      <button type="button" class="b-share" id="shareMainBtn">📷 結果を画像でシェア（LINE・X・インスタ）</button>
     </div>
-    <div class="btns" style="margin-top:14px">
+    <p class="share-hint">スマホはそのまま各SNSへ。パソコンは画像を保存してSNSに添付できます。</p>
+    <div class="btns" style="margin-top:6px">
       <button type="button" class="b-again" id="againBtn">🔄 別の子を占う</button>
     </div>
   </div>`;
@@ -1852,25 +1907,12 @@ function renderResult(p){
   r.innerHTML=html;
   r.classList.add("show");
 
-  // ── シェア用テキスト（共通） ──
-  const shareUrl="https://petdogcat.jp/uranai/";
-  const shareText=`${n}ちゃんの本格鑑定をやってみた🐾 星座は${p.zodiac.name}、運命数は${p.lifepath.num}「${p.lifepath.key}」でした✦ #ペット占い #${animal}占い`;
-  // X（旧Twitter）
-  document.getElementById("snsX").addEventListener("click",()=>{
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,"_blank","noopener");
-  });
-  // LINE
-  document.getElementById("snsLine").addEventListener("click",()=>{
-    window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,"_blank","noopener");
-  });
-  // Instagram（URL共有の仕組みがないため、キャプションをコピー→スクショと一緒に投稿してもらう）
-  document.getElementById("snsIG").addEventListener("click",()=>{
-    navigator.clipboard?.writeText(`${shareText}\n${shareUrl}`);
-    alert("キャプションをコピーしました！結果のスクショと一緒に、Instagramに投稿してね📸");
-  });
-  // ① 性格診断を「写真入りの1枚画像」にしてシェア（LINE/X/インスタ対応）
+  // ── シェア（写真＋性格診断の画像を生成して共有。スマホ=ネイティブ／PC=モーダル） ──
+  const shareMainBtn=document.getElementById("shareMainBtn");
+  if(shareMainBtn){ shareMainBtn.addEventListener("click",()=>shareResult(p, shareMainBtn)); }
+  // ① 性格診断カード内のシェアボタンも同じ画像シェアへ
   const personaBtn=document.getElementById("personaShareBtn");
-  if(personaBtn){ personaBtn.addEventListener("click",()=>sharePersonality(p, personaBtn)); }
+  if(personaBtn){ personaBtn.addEventListener("click",()=>shareResult(p, personaBtn)); }
   // 別の子を占う（入力に戻る）
   document.getElementById("againBtn").addEventListener("click",()=>{
     r.classList.remove("show"); r.innerHTML="";
