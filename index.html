@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!-- ════════════════════════════════════════════════════════════
+     ペット占い（犬猫両用・本格鑑定） / petdogcat.jp
+     ・外部AI APIは一切使わない。すべてクライアントサイドJSで鑑定文を生成。
+     ・単一HTMLファイル完結（CSS/JS内包）。フォントのみCDN。
+     ・第1回：鑑定エンジンの土台 ＋ 表示項目①〜⑤
+     ════════════════════════════════════════════════════════════ -->
+<!-- Google tag (gtag.js) — GA4 G-Y2DL6WW9HH（既存サイトと統一） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y2DL6WW9HH"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-Y2DL6WW9HH');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>ペット占い｜愛犬・愛猫の本格鑑定 – わんにゃんチェッカー</title>
+<meta name="description" content="【無料】犬猫両用の本格ペット占い。名前・生年月日・犬種/猫種から、星座・数秘術・行動学を掛け合わせて、あなたの子だけのパーソナル鑑定をお届けします。" />
+<meta name="author" content="株式会社MOFURI" />
+<link rel="canonical" href="https://petdogcat.jp/uranai/" />
+<!-- Open Graph（結果をSNSシェアしたくなる前提） -->
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="ja_JP" />
+<meta property="og:site_name" content="わんにゃんチェッカー" />
+<meta property="og:url" content="https://petdogcat.jp/uranai/" />
+<meta property="og:title" content="ペット占い｜愛犬・愛猫の本格鑑定" />
+<meta property="og:description" content="星座×数秘術×行動学で占う、あなたの子だけのパーソナル鑑定。無料・登録不要。" />
+<meta property="og:image" content="https://petdogcat.jp/ogp/ogp-uranai.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#E36E42" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════
+   RESET & 変数（オレンジ #E36E42 基調＋神秘パステル）
+═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+:root{
+  --orange:#E36E42;        /* メインカラー */
+  --orange-d:#C9542B;      /* 濃いオレンジ */
+  --orange-l:#F4A276;      /* 明るいオレンジ */
+  --cream:#FFF9F3;         /* 背景クリーム */
+  --cream2:#FFF1E6;        /* 薄いオレンジ背景 */
+  --ink:#4A3B33;           /* 文字（こげ茶） */
+  --ink-s:#8A7768;         /* サブ文字 */
+  --gold:#E8B04B;          /* 星・装飾のゴールド */
+  --lav:#B6A8D8;           /* パステル紫（神秘アクセント） */
+  --sky:#9DC9E0;           /* パステル水色 */
+  --pink:#F0B6C4;          /* パステルピンク */
+  --card:#FFFFFF;
+  --line:rgba(227,110,66,.16);
+  --R:20px;
+  --pad:clamp(18px,5vw,40px);
+  --shadow:0 14px 40px rgba(201,84,43,.12);
+}
+body{
+  font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+  color:var(--ink);line-height:1.85;overflow-x:hidden;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(182,168,216,.20), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(157,201,224,.18), transparent 55%),
+    linear-gradient(180deg, var(--cream2) 0%, var(--cream) 30%, var(--cream) 100%);
+  min-height:100vh;
+}
+.serif{font-family:'Noto Serif JP',serif}
+
+/* 背景に漂う星（装飾） */
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.stars span{position:absolute;color:var(--gold);opacity:.45;animation:tw 4s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:.7;transform:scale(1.15)}}
+
+/* ═══ NAV ═══ */
+#nav{position:sticky;top:0;z-index:50;background:rgba(255,249,243,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:880px;margin:0 auto;padding:10px var(--pad);display:flex;align-items:center;gap:10px}
+.nav-in a.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--orange-d);font-weight:900}
+.nav-in a.brand .logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--orange),var(--orange-l));color:#fff;font-size:16px}
+.nav-in .back{margin-left:auto;font-size:12px;color:var(--ink-s);text-decoration:none;font-weight:700}
+.nav-in .back:hover{color:var(--orange-d)}
+
+/* ═══ レイアウト ═══ */
+.wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:0 var(--pad) 80px}
+
+/* ═══ HERO ═══ */
+.hero{text-align:center;padding:54px 0 34px}
+.hero .moon{font-size:40px;display:inline-block;filter:drop-shadow(0 4px 10px rgba(232,176,75,.5));animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hero h1{font-size:clamp(26px,7vw,42px);font-weight:700;letter-spacing:.04em;margin:14px 0 6px;
+  background:linear-gradient(120deg,var(--orange-d),var(--orange),var(--gold));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero .sub{font-size:clamp(13px,3.5vw,16px);color:var(--ink-s);font-weight:500}
+.hero .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.hero .tags span{font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;
+  background:#fff;border:1px solid var(--line);color:var(--orange-d)}
+
+/* ═══ カード共通 ═══ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--R);
+  box-shadow:var(--shadow);padding:var(--pad);margin-top:22px;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--orange),var(--gold),var(--lav))}
+
+/* ═══ FORM ═══ */
+.form-title{font-size:18px;font-weight:900;color:var(--orange-d);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.form-note{font-size:12px;color:var(--ink-s);margin-bottom:18px}
+.field{margin-top:16px}
+.field>label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;color:var(--ink)}
+.field .req{color:var(--orange-d);font-size:11px;margin-left:5px}
+.field .opt{color:var(--ink-s);font-size:11px;margin-left:5px;font-weight:500}
+input[type=text],input[type=date],input[type=time],select{
+  width:100%;padding:12px 14px;font-size:15px;font-family:inherit;color:var(--ink);
+  background:var(--cream);border:1.5px solid var(--line);border-radius:12px;transition:.18s;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23C9542B' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff;box-shadow:0 0 0 4px rgba(227,110,66,.12)}
+/* 種別・性別ラジオ */
+.radio-row{display:flex;gap:10px}
+.radio-row label{flex:1;position:relative;cursor:pointer}
+.radio-row input{position:absolute;opacity:0;inset:0}
+.radio-row .chip{display:flex;align-items:center;justify-content:center;gap:6px;padding:13px;
+  border:1.5px solid var(--line);border-radius:12px;background:var(--cream);font-weight:700;font-size:15px;transition:.18s}
+.radio-row input:checked + .chip{border-color:var(--orange);background:linear-gradient(135deg,var(--orange),var(--orange-l));color:#fff;box-shadow:0 6px 16px rgba(227,110,66,.3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}}
+
+.submit{width:100%;margin-top:26px;padding:17px;font-size:17px;font-weight:900;font-family:inherit;color:#fff;
+  border:none;border-radius:14px;cursor:pointer;letter-spacing:.06em;
+  background:linear-gradient(120deg,var(--orange-d),var(--orange),var(--gold));
+  box-shadow:0 12px 28px rgba(227,110,66,.4);transition:.2s}
+.submit:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(227,110,66,.5)}
+.submit:active{transform:translateY(0)}
+.err{color:var(--orange-d);font-size:12.5px;font-weight:700;margin-top:12px;text-align:center;min-height:1em}
+
+/* ═══ 結果 ═══ */
+#result{display:none;margin-top:30px}
+#result.show{display:block;animation:rise .6s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* 結果ヘッダー（プロフィール要約・シェア映え） */
+.profile{text-align:center;background:
+    radial-gradient(600px 300px at 50% -20%, rgba(232,176,75,.18), transparent 60%),
+    linear-gradient(160deg,#fff,var(--cream2));}
+.profile .pet-emoji{font-size:46px}
+.profile h2{font-size:clamp(22px,6vw,32px);font-weight:700;margin:6px 0 4px;color:var(--orange-d)}
+.profile .pet-meta{font-size:13px;color:var(--ink-s);font-weight:500}
+.axis{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
+.axis .a{background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px 13px;min-width:78px}
+.axis .a .k{font-size:10px;color:var(--ink-s);font-weight:700;letter-spacing:.04em}
+.axis .a .v{font-size:15px;font-weight:900;color:var(--orange-d);margin-top:2px}
+
+/* 各鑑定項目カード */
+.item{margin-top:20px}
+.item .ihead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.item .inum{flex-shrink:0;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+  font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg,var(--orange),var(--orange-l));box-shadow:0 6px 14px rgba(227,110,66,.3)}
+.item .ititle{font-size:17px;font-weight:900;color:var(--ink)}
+.item .ititle .ico{margin-right:6px}
+.item .ibody{font-size:14.5px;line-height:1.95;color:var(--ink)}
+.item .ibody p{margin-bottom:12px}
+.item .ibody p:last-child{margin-bottom:0}
+.item.feature{border:1.5px solid rgba(227,110,66,.3)}
+.item.feature::before{height:5px}
+.item .badge{display:inline-block;font-size:10px;font-weight:900;color:#fff;background:var(--orange-d);
+  border-radius:999px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+.quote{margin:14px 0 2px;padding:12px 16px;border-left:3px solid var(--gold);
+  background:var(--cream2);border-radius:0 12px 12px 0;font-size:13.5px;color:var(--ink-s);font-style:italic}
+
+/* シェアエリア */
+.share{text-align:center;margin-top:28px}
+.share p{font-size:13px;color:var(--ink-s);margin-bottom:14px;font-weight:700}
+.share .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.share button{font-family:inherit;font-weight:800;font-size:14px;padding:12px 22px;border-radius:12px;cursor:pointer;border:none;transition:.18s}
+.share .b-share{background:linear-gradient(120deg,var(--orange),var(--gold));color:#fff;box-shadow:0 8px 20px rgba(227,110,66,.35)}
+.share .b-again{background:#fff;color:var(--orange-d);border:1.5px solid var(--line)}
+.share button:hover{transform:translateY(-2px)}
+
+/* 続き予告（後続回への布石） */
+.coming{margin-top:22px;text-align:center;padding:20px;border:1.5px dashed var(--line);border-radius:var(--R);background:rgba(255,255,255,.5)}
+.coming .t{font-weight:900;color:var(--orange-d);font-size:14px}
+.coming .d{font-size:12px;color:var(--ink-s);margin-top:6px}
+
+footer{text-align:center;padding:34px var(--pad);color:var(--ink-s);font-size:11px;position:relative;z-index:1}
+</style>
+</head>
+<body>
+
+<!-- 背景の星（装飾／JSで配置） -->
+<div class="stars" id="stars" aria-hidden="true"></div>
+
+<!-- ═══ NAV ═══ -->
+<nav id="nav">
+  <div class="nav-in">
+    <a class="brand" href="https://petdogcat.jp/"><span class="logo">🐾</span>わんにゃんチェッカー</a>
+    <a class="back" href="https://petdogcat.jp/">← トップへ</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- ═══ HERO ═══ -->
+  <header class="hero">
+    <span class="moon">🌙</span>
+    <h1 class="serif">本格ペット占い</h1>
+    <p class="sub">星座 × 数秘術 × 行動学で読み解く、<br>あなたの子だけのパーソナル鑑定</p>
+    <div class="tags"><span>✦ 犬猫両用</span><span>✦ 完全無料</span><span>✦ 登録不要</span></div>
+  </header>
+
+  <!-- ═══ 入力フォーム ═══ -->
+  <section class="card" id="formCard">
+    <div class="form-title">🔮 鑑定するペットの情報</div>
+    <p class="form-note">入力いただいた情報をもとに、その子だけの鑑定をお届けします。＊は必須項目です。</p>
+
+    <form id="petForm" novalidate>
+      <!-- 種別（最初に選ばせる：以降のロジック分岐に使用） -->
+      <div class="field">
+        <label>種別<span class="req">＊必須</span></label>
+        <div class="radio-row" id="speciesRow">
+          <label><input type="radio" name="species" value="dog" checked><span class="chip">🐶 犬</span></label>
+          <label><input type="radio" name="species" value="cat"><span class="chip">🐱 猫</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="name">お名前<span class="req">＊必須</span></label>
+        <input type="text" id="name" name="name" placeholder="例：モフリ" maxlength="20" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label>性別<span class="opt">（任意）</span></label>
+        <div class="radio-row">
+          <label><input type="radio" name="gender" value="男の子" checked><span class="chip">♂ 男の子</span></label>
+          <label><input type="radio" name="gender" value="女の子"><span class="chip">♀ 女の子</span></label>
+        </div>
+      </div>
+
+      <!-- 犬種/猫種：種別に応じてJSで選択肢を切り替え -->
+      <div class="field">
+        <label for="breed" id="breedLabel">犬種<span class="opt">（任意）</span></label>
+        <select id="breed" name="breed"></select>
+      </div>
+
+      <div class="field">
+        <label for="color">毛色<span class="opt">（任意）</span></label>
+        <select id="color" name="color">
+          <option value="">選択してください</option>
+          <option>白</option><option>黒</option><option>茶（ブラウン・レッド）</option>
+          <option>クリーム・ゴールド</option><option>グレー・ブルー</option>
+          <option>茶白・ハチワレ</option><option>三毛</option><option>キジトラ・サバトラ</option>
+          <option>サビ（べっこう）</option><option>シルバー</option><option>その他・ミックス</option>
+        </select>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="birth">生年月日<span class="req">＊必須</span></label>
+          <input type="date" id="birth" name="birth">
+        </div>
+        <div class="field">
+          <label for="birthTime">出生時間<span class="opt">（不明可）</span></label>
+          <input type="time" id="birthTime" name="birthTime">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="birthPlace">出生地<span class="opt">（不明可）</span></label>
+        <select id="birthPlace" name="birthPlace">
+          <option value="">不明・選択しない</option>
+          <option>北海道・東北</option><option>関東</option><option>中部・北陸</option>
+          <option>近畿</option><option>中国・四国</option><option>九州・沖縄</option>
+          <option>海外</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="pastName">過去の名前<span class="opt">（任意・保護っ子など）</span></label>
+        <input type="text" id="pastName" name="pastName" placeholder="以前呼ばれていた名前があれば" maxlength="20" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label for="history">経歴<span class="opt">（任意）</span></label>
+        <select id="history" name="history">
+          <option value="通常">通常（ブリーダー・ペットショップ・知人から等）</option>
+          <option value="保護">保護犬・保護猫</option>
+          <option value="繁殖">元繁殖犬・元繁殖猫</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+
+      <button type="submit" class="submit">✦ 鑑定する ✦</button>
+      <div class="err" id="err"></div>
+    </form>
+  </section>
+
+  <!-- ═══ 鑑定結果（JSで生成・初期は非表示） ═══ -->
+  <section id="result"></section>
+
+</div>
+
+<footer>
+  © 株式会社MOFURI / わんにゃんチェッカー｜本占いはエンターテインメントです。<br>
+  鑑定結果は愛犬・愛猫との暮らしを楽しむための読み物としてお楽しみください。
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   ★ 鑑定エンジン本体 ★
+   ・外部APIを使わず、入力から「占いの軸」を割り出し、複数を掛け合わせて
+     鑑定文を組み立てる。各軸は純粋関数として独立（後続項目で再利用）。
+   ・トーン方針：愛情のある読み物。ポジティブ寄りで短所も愛おしく描く。
+   ・健康項目（後続回）に備え、医療・治療を示唆する表現は使わない。
+═══════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────────────────────────
+   1. テキストパターン（データオブジェクト）
+   ※後から追記・拡張しやすいよう、文言はすべてここに集約
+─────────────────────────────────────────── */
+
+// 西洋12星座データ
+const ZODIAC = {
+  aries:{name:"おひつじ座",emoji:"♈",element:"火",
+    trait:"まっすぐで好奇心旺盛。思い立ったら一直線に動く、純粋なエネルギーの持ち主です",
+    love:"気持ちをストレートに伝えるタイプ",talent:"新しいことへ飛び込む瞬発力"},
+  taurus:{name:"おうし座",emoji:"♉",element:"土",
+    trait:"マイペースで穏やか。心地よさと安心を何より大切にする、芯のやさしい子です",
+    love:"じっくり信頼を育てるタイプ",talent:"お気に入りの場所や物を見つける名人"},
+  gemini:{name:"ふたご座",emoji:"♊",element:"風",
+    trait:"好奇心と社交性にあふれ、変化を楽しむ。表情がくるくる変わる愛嬌の持ち主です",
+    love:"遊びを通して心を通わせるタイプ",talent:"いろんな遊びを覚える器用さ"},
+  cancer:{name:"かに座",emoji:"♋",element:"水",
+    trait:"愛情深く家族思い。安心できる「自分の場所」を大切にする、情の濃い子です",
+    love:"そばに寄り添って安心をくれるタイプ",talent:"家族の気持ちを察する優しさ"},
+  leo:{name:"しし座",emoji:"♌",element:"火",
+    trait:"堂々として表現力豊か。注目を浴びるとぐんと輝く、主役オーラのある子です",
+    love:"愛されると全力で応えるタイプ",talent:"みんなを楽しませる存在感"},
+  virgo:{name:"おとめ座",emoji:"♍",element:"土",
+    trait:"繊細で気配り上手。きれい好きで、小さな変化によく気づく賢い子です",
+    love:"丁寧に距離を縮めるタイプ",talent:"こまやかに状況を読む観察力"},
+  libra:{name:"てんびん座",emoji:"♎",element:"風",
+    trait:"バランス感覚と優しさを持ち、争いを好まない。場をなごませる平和主義者です",
+    love:"穏やかな調和を大切にするタイプ",talent:"だれとでも仲良くなる社交性"},
+  scorpio:{name:"さそり座",emoji:"♏",element:"水",
+    trait:"一途で情熱的。信じた相手にはとことん深く尽くす、まっすぐな愛の持ち主です",
+    love:"心を許した相手に深く尽くすタイプ",talent:"ひとつのことに集中する一途さ"},
+  sagittarius:{name:"いて座",emoji:"♐",element:"火",
+    trait:"自由奔放で冒険好き。楽天的でおおらか、毎日をめいっぱい楽しむ子です",
+    love:"のびのびと一緒に楽しむタイプ",talent:"未知の場所も楽しむ冒険心"},
+  capricorn:{name:"やぎ座",emoji:"♑",element:"土",
+    trait:"努力家で誠実。コツコツ積み重ねる頑張り屋さんで、芯の強い子です",
+    love:"時間をかけて深い絆を築くタイプ",talent:"覚えたことを着実に身につける根気"},
+  aquarius:{name:"みずがめ座",emoji:"♒",element:"風",
+    trait:"個性的でマイワールドを持つ。独創的でとらわれない、自由な発想の子です",
+    love:"自分らしさを大切にするタイプ",talent:"人と違う視点や個性的な行動"},
+  pisces:{name:"うお座",emoji:"♓",element:"水",
+    trait:"優しく感受性豊か。空気を読むのが上手で、心に寄り添ってくれる癒やしの子です",
+    love:"気持ちにそっと寄り添うタイプ",talent:"飼い主の感情を感じ取る共感力"},
+};
+
+// 数秘術 運命数データ（1〜9＋マスターナンバー11/22/33）
+const LIFEPATH = {
+  1:{key:"開拓者",core:"先頭に立つリーダーの星。意志が強く、自分の道を切り開いていく力を持っています",
+     role:"周りを引っ張り、新しい一歩を踏み出させてくれる存在",love:"頼れるリーダーとしてあなたを導く"},
+  2:{key:"調和の人",core:"寄り添いとサポートの星。相手の気持ちを大切にする、やさしい協調の力を持っています",
+     role:"そっと隣に寄り添い、心の支えになってくれる存在",love:"あなたの気持ちに寄り添うパートナー"},
+  3:{key:"表現者",core:"楽しさと表現の星。明るく無邪気で、まわりを笑顔にするムードメーカーです",
+     role:"毎日に笑いと彩りを運んでくれる存在",love:"一緒にいると元気になれる相棒"},
+  4:{key:"努力家",core:"安定と誠実の星。まじめでコツコツ型、信頼できる土台のような力を持っています",
+     role:"暮らしに安定と安心をもたらしてくれる存在",love:"裏切らない誠実なパートナー"},
+  5:{key:"自由人",core:"変化と自由の星。好奇心旺盛でフットワークが軽く、刺激を楽しむ冒険者です",
+     role:"日常に新しい風と刺激を運んでくれる存在",love:"一緒に冒険を楽しむ自由な相棒"},
+  6:{key:"愛の人",core:"愛と奉仕の星。面倒見がよく、家族を包み込むあたたかさを持っています",
+     role:"家族みんなを癒やし、まとめてくれる存在",love:"惜しみない愛情を注いでくれる家族"},
+  7:{key:"探究者",core:"探究と神秘の星。一人の時間も大切にする、思慮深く静かな賢者タイプです",
+     role:"静かに見守り、深い信頼で結ばれる存在",love:"程よい距離で深く理解し合えるパートナー"},
+  8:{key:"パワフル",core:"力と豊かさの星。エネルギッシュで頼りがいがあり、堂々とした存在感を放ちます",
+     role:"力強く家族を守り、引っ張ってくれる存在",love:"頼もしく支えてくれるパートナー"},
+  9:{key:"博愛の人",core:"博愛と完成の星。やさしく包容力があり、だれにでも分け隔てなく接する子です",
+     role:"すべてをあたたかく受け止めてくれる存在",love:"無条件の優しさで包んでくれる家族"},
+  11:{key:"感性の使者",core:"直感と感受性の星（マスターナンバー）。鋭い勘と繊細な心を持つ、特別な感性の子です",
+     role:"言葉なきメッセージで心を通わせる、特別な存在",love:"不思議なほど気持ちが通じ合うパートナー"},
+  22:{key:"夢の実現者",core:"実現とスケールの星（マスターナンバー）。大きな存在感で、まわりに大きな影響を与える子です",
+     role:"家族の夢や暮らしを大きく広げてくれる存在",love:"人生を豊かに変えてくれる特別な家族"},
+  33:{key:"無償の愛",core:"無償の愛の星（マスターナンバー）。すべてを癒やす、まれにみるやさしさを持つ子です",
+     role:"そこにいるだけで皆を癒やす、奇跡のような存在",love:"心ごと包み込んでくれる唯一無二の家族"},
+};
+
+// 行動学ベースの犬種グループ
+const DOG_GROUP = {
+  小型愛玩犬:{label:"小型愛玩犬グループ",
+    personality:"人と寄り添うことに喜びを感じる、甘え上手で愛情深いタイプ。表情ゆたかで、家族の気持ちに敏感です",
+    talent:"人の心を読み、そばで癒やしを届けること。コミュニケーション上手",
+    love:"いつもそばにいたい甘えん坊"},
+  大型使役犬:{label:"大型使役犬グループ",
+    personality:"おおらかで忠実、頼れる優しい巨人タイプ。落ち着きがあり、家族を守ろうとする責任感を持っています",
+    talent:"家族を見守り、安心を与えること。穏やかな包容力",
+    love:"どっしり構えて守ってくれる頼れる存在"},
+  狩猟犬系:{label:"狩猟犬系グループ",
+    personality:"好奇心旺盛でエネルギッシュ、賢くて遊び上手なタイプ。やると決めたら夢中になる集中力を持っています",
+    talent:"においや音を追う探索力と、遊びへの情熱",
+    love:"一緒にアクティブに楽しめる相棒"},
+  牧羊犬系:{label:"牧羊犬系グループ",
+    personality:"とても賢く、よく気がつくしっかり者タイプ。家族の動きをよく見て、まとめようとする働き者です",
+    talent:"状況判断と学習能力。覚えることが大好き",
+    love:"頭の回転が速い気のきく相棒"},
+  短頭種:{label:"短頭種グループ",
+    personality:"マイペースで愛嬌たっぷり、いるだけで場をなごませるタイプ。のんびり屋さんで人気者です",
+    talent:"独特の存在感で皆を笑顔にすること",
+    love:"ゆるくて愛おしい癒やし担当"},
+  日本犬系:{label:"日本犬系グループ",
+    personality:"凛として誇り高く、芯の強い忠義者タイプ。クールに見えて、心を許した家族にはとても一途です",
+    talent:"信頼した相手への深い忠誠と、凛とした佇まい",
+    love:"ツンデレで一途な忠犬"},
+  その他:{label:"ミックス・その他グループ",
+    personality:"いいところをたくさん受け継いだ、世界に一つだけの個性派タイプ。柔軟で順応性が高い子です",
+    talent:"さまざまな個性を併せ持つバランス感覚",
+    love:"オンリーワンの魅力を持つ相棒"},
+};
+
+// 行動学ベースの猫種グループ
+const CAT_GROUP = {
+  活発種:{label:"活発種グループ",
+    personality:"好奇心旺盛で運動神経ばつぐん、遊び大好きなアクティブタイプ。頭もよく、刺激を求めて動き回ります",
+    talent:"高い身体能力と、遊びを楽しむ才能",
+    love:"一緒に遊ぶと最高に盛り上がる相棒"},
+  おっとり種:{label:"おっとり種グループ",
+    personality:"穏やかでマイペース、おっとりした癒やし系タイプ。争いを好まず、ゆったりとした時間を大切にします",
+    talent:"その場をなごませる、おだやかな存在感",
+    love:"のんびり一緒に過ごせる癒やし担当"},
+  甘えん坊種:{label:"甘えん坊種グループ",
+    personality:"人が大好きで甘え上手、くっつきたがりな愛されタイプ。表情ゆたかで、家族に全力で甘えます",
+    talent:"人の心にすっと入り込む、愛されオーラ",
+    love:"べったり甘えてくる愛されっ子"},
+  独立種:{label:"独立種グループ",
+    personality:"クールで自立心が強く、自分の世界を持つ気高いタイプ。心を許した相手にだけ見せる甘えが魅力です",
+    talent:"凛とした佇まいと、芯のある自立心",
+    love:"気まぐれで奥ゆかしいツンデレさん"},
+  長毛種:{label:"長毛種グループ",
+    personality:"優雅で気品ただよう、おっとりした貴族タイプ。穏やかで、ゆったりとした空気をまとっています",
+    talent:"気品あふれる立ち居振る舞いと存在感",
+    love:"上品でおっとりした癒やしの存在"},
+  短毛種:{label:"短毛種グループ",
+    personality:"賢くて順応性が高い、バランスのとれた優等生タイプ。活発さと甘えん坊さをほどよく併せ持ちます",
+    talent:"環境への適応力と、ほどよい距離感のセンス",
+    love:"つかず離れずが上手な相棒"},
+  その他:{label:"ミックス・その他グループ",
+    personality:"たくましく賢い、世界に一つだけの個性派タイプ。順応性が高く、芯のしっかりした子です",
+    talent:"たくましい生命力と、柔軟な順応力",
+    love:"オンリーワンの魅力を持つ相棒"},
+};
+
+// 犬種 → グループ マッピング（代表的な犬種）
+const DOG_BREED_MAP = {
+  "トイプードル":"小型愛玩犬","チワワ":"小型愛玩犬","ポメラニアン":"小型愛玩犬","ヨークシャーテリア":"小型愛玩犬",
+  "マルチーズ":"小型愛玩犬","シーズー":"小型愛玩犬","パピヨン":"小型愛玩犬","キャバリア":"小型愛玩犬",
+  "ミニチュアダックスフンド":"狩猟犬系","ビーグル":"狩猟犬系","ジャックラッセルテリア":"狩猟犬系",
+  "ミニチュアシュナウザー":"狩猟犬系","ワイマラナー":"狩猟犬系",
+  "ゴールデンレトリバー":"大型使役犬","ラブラドールレトリバー":"大型使役犬","バーニーズマウンテンドッグ":"大型使役犬",
+  "グレートピレニーズ":"大型使役犬","シベリアンハスキー":"大型使役犬",
+  "ボーダーコリー":"牧羊犬系","シェットランドシープドッグ":"牧羊犬系","ウェルシュコーギー":"牧羊犬系",
+  "ジャーマンシェパード":"牧羊犬系","オーストラリアンシェパード":"牧羊犬系",
+  "フレンチブルドッグ":"短頭種","パグ":"短頭種","ブルドッグ":"短頭種","ボストンテリア":"短頭種","ペキニーズ":"短頭種",
+  "柴犬":"日本犬系","豆柴":"日本犬系","秋田犬":"日本犬系","日本スピッツ":"日本犬系",
+  "その他・ミックス":"その他",
+};
+// 猫種 → グループ マッピング（代表的な猫種）
+const CAT_BREED_MAP = {
+  "アメリカンショートヘア":"活発種","アビシニアン":"活発種","ベンガル":"活発種","オリエンタルショートヘア":"活発種","シャム（サイアミーズ）":"活発種",
+  "ラグドール":"おっとり種","ブリティッシュショートヘア":"おっとり種","エキゾチックショートヘア":"おっとり種",
+  "スコティッシュフォールド":"甘えん坊種","マンチカン":"甘えん坊種","ラガマフィン":"甘えん坊種","ミヌエット":"甘えん坊種",
+  "ロシアンブルー":"独立種","日本猫（キジトラ・三毛など）":"独立種",
+  "ペルシャ":"長毛種","ノルウェージャンフォレストキャット":"長毛種","メインクーン":"長毛種","ソマリ":"長毛種","サイベリアン":"長毛種",
+  "その他・ミックス":"その他",
+};
+
+// 名前の「音の響き」＝主要母音タイプ
+const VOWEL = {
+  a:{key:"あ行の明朗",reading:"明るくおおらかで、まわりを元気にする太陽のような響き"},
+  i:{key:"い行の繊細",reading:"繊細で感受性ゆたか、芯に意志を秘めた美しい響き"},
+  u:{key:"う行の芯",reading:"おっとりして見えて芯が強い、安定感のある落ち着いた響き"},
+  e:{key:"え行の社交",reading:"社交的で愛嬌たっぷり、人を惹きつける親しみある響き"},
+  o:{key:"お行の大らか",reading:"おおらかで包容力があり、どっしりと頼れる響き"},
+};
+
+// 簡易・名前の数（吉数傾向）※厳密な漢字画数ではなく音と文字数ベース
+const NAME_NUMBER = {
+  1:"始まりと自立を呼ぶ数。自分らしく道を切り開く力に恵まれています",
+  2:"ご縁と調和を呼ぶ数。人とのつながりに恵まれ、愛される運を持っています",
+  3:"才能と人気を呼ぶ数。明るさと表現力で、まわりを惹きつける運を持っています",
+  4:"安定と堅実を呼ぶ数。コツコツ積み重ね、信頼を得ていく運を持っています",
+  5:"変化と自由を呼ぶ数。フットワーク軽く、楽しみを広げていく運を持っています",
+  6:"愛情と家庭を呼ぶ数。あたたかな絆と、家族の幸せに恵まれる運を持っています",
+  7:"探究と幸運を呼ぶ数。マイペースに進む中で、思わぬ幸運に恵まれる運を持っています",
+  8:"発展と豊かさを呼ぶ数。エネルギーにあふれ、実りある毎日を引き寄せる運を持っています",
+  9:"完成と人徳を呼ぶ数。やさしさと包容力で、多くの愛を集める運を持っています",
+};
+
+// 毛色 → カラー診断（毛色から連想する性質）。キーワード部分一致で判定
+const COLOR_READING = [
+  {kw:["白"],key:"ホワイト",reading:"純粋でピュアな心の持ち主。素直でまっすぐ、まわりに清らかな安心感を与えます"},
+  {kw:["黒"],key:"ブラック",reading:"芯が強くミステリアス。冷静で頼りがいがあり、いざという時に力を発揮します"},
+  {kw:["茶","ブラウン","レッド"],key:"ブラウン",reading:"穏やかで親しみやすい、ぬくもりの人。安心感を与える、まわりに愛される性質です"},
+  {kw:["クリーム","ゴールド","金"],key:"ゴールド",reading:"明るく華やか、生まれながらの人気者。前向きで、幸運を引き寄せる性質です"},
+  {kw:["グレー","ブルー","シルバー"],key:"グレー／ブルー",reading:"クールで知的、上品なセンスの持ち主。落ち着きと気品をまとっています"},
+  {kw:["三毛","ハチワレ","茶白","キジ","サバ"],key:"ミックスカラー",reading:"多彩な魅力を併せ持つ個性派。表情ゆたかで、一緒にいて飽きさせない性質です"},
+  {kw:["サビ","べっこう"],key:"サビ",reading:"奥ゆかしくも芯のある、味わい深い魅力の持ち主。知れば知るほど好きになる性質です"},
+];
+
+/* ───────────────────────────────────────────
+   2. 占いの軸を割り出す純粋関数群
+   ※後続の全項目で再利用するため、独立した関数として分離
+─────────────────────────────────────────── */
+
+// ① 西洋12星座
+function getZodiac(birth){
+  const d=new Date(birth); const m=d.getMonth()+1, day=d.getDate();
+  const z=([
+    ["capricorn",1,20],["aquarius",2,19],["pisces",3,20],["aries",4,19],
+    ["taurus",5,20],["gemini",6,21],["cancer",7,22],["leo",8,22],
+    ["virgo",9,22],["libra",10,23],["scorpio",11,22],["sagittarius",12,21],
+  ]);
+  // 各月の境界日以前ならその月の星座、超えたら翌月の星座
+  let key;
+  for(let i=0;i<z.length;i++){ if(m===z[i][1]){ key = day<=z[i][2]?z[i][0]:z[(i+1)%12][0]; break; } }
+  return {key, ...ZODIAC[key]};
+}
+
+// ② 数秘術の運命数（各桁合算→1桁、ただし11/22/33は保持）
+function getLifePathNumber(birth){
+  const digits=birth.replace(/\D/g,""); // yyyymmdd
+  const reduce=(n)=>{ while(n>9 && n!==11 && n!==22 && n!==33){ n=String(n).split("").reduce((a,b)=>a+ +b,0); } return n; };
+  const sum=digits.split("").reduce((a,b)=>a+ +b,0);
+  const num=reduce(sum);
+  return {num, ...LIFEPATH[num]};
+}
+
+// ③ 行動学ベースの特性グループ
+function getBreedGroup(species, breed){
+  const map = species==="cat"?CAT_BREED_MAP:DOG_BREED_MAP;
+  const groups = species==="cat"?CAT_GROUP:DOG_GROUP;
+  const groupKey = map[breed] || "その他";
+  return {key:groupKey, ...groups[groupKey]};
+}
+
+// ④ 簡易・画数／音の響き判定（カタカナ・ひらがな対応）
+function getNameStrokes(name){
+  if(!name) return {vowel:VOWEL.a, number:1, numberText:NAME_NUMBER[1], reduced:1};
+  // 主要母音の判定（清音・濁音をざっくり母音に対応づけ）
+  const vmap={a:"あかさたなはまやらわがざだばぱアカサタナハマヤラワガザダバパ",
+              i:"いきしちにひみりぎじぢびぴイキシチニヒミリギジヂビピ",
+              u:"うくすつぬふむゆるぐずづぶぷウクスツヌフムユルグズヅブプ",
+              e:"えけせてねへめれげぜでべぺエケセテネヘメレゲゼデベペ",
+              o:"おこそとのほもよろをごぞどぼぽオコソトノホモヨロヲゴゾドボポ"};
+  const cnt={a:0,i:0,u:0,e:0,o:0};
+  for(const ch of name){ for(const v in vmap){ if(vmap[v].includes(ch)) cnt[v]++; } }
+  let topV="a",max=-1; for(const v in cnt){ if(cnt[v]>max){max=cnt[v];topV=v;} }
+  // 名前の「数」＝文字コード総和を1〜9へ（厳密な画数ではなく簡易ロジック）
+  let sum=0; for(const ch of name){ sum+=ch.codePointAt(0); }
+  let reduced=(sum%9)+1; // 1〜9
+  return {vowel:VOWEL[topV], number:reduced, numberText:NAME_NUMBER[reduced], reduced};
+}
+
+// ⑤ カラー診断（毛色から連想する性質）
+function getColorReading(color){
+  if(!color) return null;
+  for(const c of COLOR_READING){ if(c.kw.some(k=>color.includes(k))) return c; }
+  return {key:"オリジナルカラー",reading:"既存の枠にとらわれない、唯一無二の個性をまとった特別な色合いです"};
+}
+
+// ⑥ 経歴 → ストーリー補正フラグ（保護/繁殖出身なら温かい補正を加える）
+function getHistoryModifier(history){
+  switch(history){
+    case "保護": return {flag:"rescue",
+      tone:"つらい時間を乗り越えて、今あなたのもとへ。その小さな胸には、人を信じ直すという何よりの勇気が宿っています。"};
+    case "繁殖": return {flag:"breeding",
+      tone:"たくさんの命を見守ってきたこの子は、もう十分すぎるほど頑張りました。これからは愛されるためだけに生きていい——そんな新しい人生の始まりです。"};
+    case "その他": return {flag:"other",
+      tone:"いろいろな道を通って、あなたと出会いました。その歩みのすべてが、今のこの子の深い味わいになっています。"};
+    default: return {flag:"normal", tone:""};
+  }
+}
+
+/* ───────────────────────────────────────────
+   3. すべての軸を1つのプロフィールにまとめる
+   ※各項目生成関数には、このオブジェクト1つを渡す設計
+─────────────────────────────────────────── */
+function buildProfile(input){
+  return {
+    input,
+    zodiac:    getZodiac(input.birth),
+    lifepath:  getLifePathNumber(input.birth),
+    breed:     getBreedGroup(input.species, input.breed),
+    name:      getNameStrokes(input.name),
+    // 過去の名前の軸（あれば）。③で使用
+    pastName:  input.pastName ? getNameStrokes(input.pastName) : null,
+    color:     getColorReading(input.color),
+    history:   getHistoryModifier(input.history),
+  };
+}
+
+/* ───────────────────────────────────────────
+   4. 各項目の鑑定文生成関数
+   ※「項目ごとの関数」を配列に登録し、順に表示する仕組み。
+     関数を追加すれば項目が増やせる拡張構造。
+   ※各関数は {title, ico, html, feature?} を返す。
+─────────────────────────────────────────── */
+
+// 共通：名前の表記ゆれ用ヘルパー
+function petName(p){ return escapeHtml(p.input.name); }
+function speciesWord(p){ return p.input.species==="cat"?"猫":"犬"; }
+
+// ① 性格診断（犬種グループ＋星座＋数秘を掛け合わせ＝占いの顔・最も厚く）
+function item01_personality(p){
+  const n=petName(p);
+  let html="";
+  html+=`<p>${n}ちゃんは、行動学から見ると<b>${p.breed.label}</b>。${p.breed.personality}。</p>`;
+  html+=`<p>そこに生まれ持った<b>${p.zodiac.name}${p.zodiac.emoji}</b>の星が重なります。${p.zodiac.trait}。${speciesWord(p)}としての気質と星の性質が溶け合い、${n}ちゃんならではの表情をつくり出しています。</p>`;
+  html+=`<p>さらに魂の中心には、数秘術の運命数<b>「${p.lifepath.num}・${p.lifepath.key}」</b>が息づいています。${p.lifepath.core}。これが、${n}ちゃんの「らしさ」の核となる部分です。</p>`;
+  // 短所も愛おしく（ネガティブ断定で終わらせない）
+  html+=`<p>ときに頑固に見えたり、気分屋に映る瞬間があるかもしれません。けれどそれは、${n}ちゃんが自分の心に正直で、まっすぐに生きている証。短所のように見えるところまで含めて、まるごと愛おしい——それがこの子の魅力です。</p>`;
+  // 経歴補正（保護・繁殖などのトーン）
+  if(p.history.tone){ html+=`<div class="quote">${p.history.tone}</div>`; }
+  return {title:"性格診断", ico:"🌟", html, feature:true};
+}
+
+// ② 飼い主との相性（数秘＋星座ベース）
+function item02_owner(p){
+  const n=petName(p);
+  let html="";
+  html+=`<p>${n}ちゃんと、あなた。この出会いには意味があります。</p>`;
+  html+=`<p>数秘の上で${n}ちゃんは<b>${p.lifepath.role}</b>。あなたにとって、${p.lifepath.love}存在になってくれるでしょう。</p>`;
+  html+=`<p>恋愛でいう相性にたとえるなら、${n}ちゃんは<b>${p.zodiac.love}</b>。${p.zodiac.element}のエネルギーを持つこの子は、あなたの毎日にちょうどよい温度を運んでくれます。</p>`;
+  html+=`<p>ときには気持ちがすれ違う日もあるかもしれません。でも大丈夫。${n}ちゃんはいつも、あなたのことを見ています。焦らずゆっくり、お互いのペースで絆を深めていけば、唯一無二のパートナーになれる二人です。</p>`;
+  return {title:"飼い主との相性", ico:"💞", html};
+}
+
+// ③ 過去の名前から見える過去の運命（過去の名前があればそれで、なければ現在の名前で）
+function item03_pastFate(p){
+  const n=petName(p);
+  const useName = p.pastName ? p.pastName : p.name;
+  const label = p.pastName ? `かつての名前「${escapeHtml(p.input.pastName)}」` : `今のお名前「${n}」`;
+  let html="";
+  if(p.pastName){
+    html+=`<p>${n}ちゃんには、今の名前になる前の物語があります。</p>`;
+  }else{
+    html+=`<p>名前には、その子が歩んできた運命が映し出されると言われます。</p>`;
+  }
+  html+=`<p>${label}が響かせる音は、<b>${useName.vowel.key}</b>。${useName.vowel.reading}を持っています。</p>`;
+  html+=`<p>その名が宿す数は<b>「${useName.number}」</b>。${useName.numberText}。</p>`;
+  if(p.pastName){
+    html+=`<p>過去にどんな日々があったとしても、その響きと数は、${n}ちゃんが本来持っている力をずっと示し続けてきました。過去はこの子の土台。そのすべてが、今のあなたとの暮らしへつながっています。</p>`;
+  }else{
+    html+=`<p>この名前を選んだのは、きっと偶然ではありません。${n}ちゃんが持って生まれた運命と、あなたがつけた名前は、不思議なほど響き合っています。</p>`;
+  }
+  return {title:"過去の名前から見える運命", ico:"📜", html};
+}
+
+// ④ 今世での役割（数秘の運命数ベース＋経歴補正）
+function item04_role(p){
+  const n=petName(p);
+  let html="";
+  html+=`<p>${n}ちゃんがこの世に生まれ、あなたと出会ったことには、ちゃんと役割があります。</p>`;
+  html+=`<p>運命数<b>「${p.lifepath.num}・${p.lifepath.key}」</b>を持つ${n}ちゃんの使命は——<b>${p.lifepath.role}</b>であること。${p.lifepath.core}。その存在そのものが、あなたの人生へのギフトです。</p>`;
+  // 経歴によって役割の意味づけを補正
+  if(p.history.flag==="rescue"){
+    html+=`<p>一度は人と離れる経験をしたこの子だからこそ、「もう一度信じること」の尊さを、あなたに教えてくれます。${n}ちゃんがあなたを選び直したこと——それ自体が、深い意味を持つ役割なのです。</p>`;
+  }else if(p.history.flag==="breeding"){
+    html+=`<p>たくさんの命に寄り添ってきた${n}ちゃんは、いま「自分が愛される番」を生きています。あなたに愛される姿を見せることが、この子の新しい、そして何より大切な役割です。</p>`;
+  }else{
+    html+=`<p>気負う必要はありません。${n}ちゃんはただ、そこにいてくれるだけでいい。その役割を、毎日しっかり果たしてくれています。</p>`;
+  }
+  return {title:"今世での役割", ico:"✨", html};
+}
+
+// ⑤ 得意なこと（犬種/猫種グループ＋星座ベース）
+function item05_talent(p){
+  const n=petName(p);
+  let html="";
+  html+=`<p>${n}ちゃんには、生まれ持った得意分野があります。</p>`;
+  html+=`<p>${p.breed.label}ゆずりの才能は——<b>${p.breed.talent}</b>。これはこの子が自然体でいるときに、いちばん輝くポイントです。</p>`;
+  html+=`<p>さらに${p.zodiac.name}${p.zodiac.emoji}の星が、<b>${p.zodiac.talent}</b>という魅力を添えています。ふたつが組み合わさることで、${n}ちゃんだけの特別な「得意」が生まれます。</p>`;
+  html+=`<p>もし伸ばしてあげたいなら、${n}ちゃんが夢中になっている瞬間をそっと応援してあげてください。「上手だね」のひと言が、この子の才能をぐんと花開かせます。</p>`;
+  return {title:"得意なこと", ico:"🎯", html};
+}
+
+/* ── 後続回で実装する項目のひな形（関数を追加すれば項目が増える構造） ──
+   ※今回は表示しない。配列 ITEMS に push すれば自動で結果に並ぶ。
+   ※健康系の項目では、医療・治療を示唆する表現は使わない方針を厳守すること。 */
+// function item06_loveStyle(p){ /* 後続回で実装：愛情表現のクセ */ }
+// function item07_weakPoint(p){ /* 後続回で実装：ちょっと苦手なこと（愛おしく） */ }
+// function item08_pastLife(p){ /* 後続回で実装：前世 */ }
+// ...（⑥〜⑳）...
+// function itemHappiness(p){ /* 後続回で実装：幸福度メーター */ }
+// function itemBest5(p){ /* 後続回で実装：幸せの瞬間ベスト5 */ }
+// function itemLetter(p){ /* 後続回で実装：ペットから飼い主への手紙 */ }
+
+// 表示する項目の登録順（後続回はここに push するだけ）
+const ITEMS = [
+  item01_personality,
+  item02_owner,
+  item03_pastFate,
+  item04_role,
+  item05_talent,
+];
+
+/* ───────────────────────────────────────────
+   5. 描画・UI制御
+─────────────────────────────────────────── */
+
+// HTMLエスケープ（入力値の安全な表示用）
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// 犬種/猫種セレクトを種別に応じて切り替え
+function renderBreedOptions(species){
+  const sel=document.getElementById("breed");
+  const label=document.getElementById("breedLabel");
+  const map = species==="cat"?CAT_BREED_MAP:DOG_BREED_MAP;
+  label.firstChild.textContent = species==="cat"?"猫種":"犬種";
+  let html=`<option value="">選択してください</option>`;
+  for(const k in map){ html+=`<option>${k}</option>`; }
+  sel.innerHTML=html;
+}
+
+// 結果の描画
+function renderResult(p){
+  const r=document.getElementById("result");
+  const n=petName(p);
+  const emoji = p.input.species==="cat" ? "🐱" : "🐶";
+  const colorAxis = p.color ? `<div class="a"><div class="k">カラー診断</div><div class="v">${escapeHtml(p.color.key)}</div></div>` : "";
+
+  let html="";
+  // プロフィール要約（スクショ・シェア映えするヘッダー）
+  html+=`<div class="card profile">
+    <div class="pet-emoji">${emoji}✦</div>
+    <h2 class="serif">${n} ちゃんの鑑定書</h2>
+    <p class="pet-meta">${escapeHtml(p.input.gender)}・${p.breed.label}${p.input.color?"・"+escapeHtml(p.input.color):""}</p>
+    <div class="axis">
+      <div class="a"><div class="k">星座</div><div class="v">${p.zodiac.name}${p.zodiac.emoji}</div></div>
+      <div class="a"><div class="k">運命数</div><div class="v">${p.lifepath.num}</div></div>
+      <div class="a"><div class="k">タイプ</div><div class="v">${p.lifepath.key}</div></div>
+      ${colorAxis}
+    </div>
+  </div>`;
+
+  // 各項目（ITEMS配列を順に実行）
+  ITEMS.forEach((fn,i)=>{
+    const it=fn(p);
+    html+=`<div class="card item${it.feature?' feature':''}">
+      <div class="ihead">
+        <div class="inum">${i+1}</div>
+        <div class="ititle"><span class="ico">${it.ico}</span>${escapeHtml(it.title)}${it.feature?'<span class="badge">占いの顔</span>':''}</div>
+      </div>
+      <div class="ibody">${it.html}</div>
+    </div>`;
+  });
+
+  // 後続回予告（拡張の布石）
+  html+=`<div class="coming">
+    <div class="t">🔮 この続きは、近日公開予定</div>
+    <div class="d">前世・幸福度メーター・幸せの瞬間ベスト5・${n}ちゃんからあなたへの手紙 …など全20項目以上をお届けします。</div>
+  </div>`;
+
+  // シェアエリア
+  html+=`<div class="share">
+    <p>📸 結果をスクショして、SNSでシェアしてね</p>
+    <div class="btns">
+      <button type="button" class="b-share" id="shareBtn">結果をシェア</button>
+      <button type="button" class="b-again" id="againBtn">もう一度占う</button>
+    </div>
+  </div>`;
+
+  r.innerHTML=html;
+  r.classList.add("show");
+
+  // シェアボタン（Web Share API、なければURLコピー）
+  document.getElementById("shareBtn").addEventListener("click",()=>{
+    const text=`${n}ちゃんを本格ペット占いで鑑定したよ🔮 星座は${p.zodiac.name}、運命数は${p.lifepath.num}「${p.lifepath.key}」でした✦`;
+    const url="https://petdogcat.jp/uranai/";
+    if(navigator.share){ navigator.share({title:"ペット占い",text,url}).catch(()=>{}); }
+    else{ navigator.clipboard?.writeText(text+" "+url); alert("シェア用テキストをコピーしました！"); }
+  });
+  // もう一度占う
+  document.getElementById("againBtn").addEventListener("click",()=>{
+    r.classList.remove("show"); r.innerHTML="";
+    document.getElementById("formCard").scrollIntoView({behavior:"smooth"});
+  });
+
+  // 結果へスクロール
+  r.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+// フォーム送信
+function onSubmit(e){
+  e.preventDefault();
+  const err=document.getElementById("err"); err.textContent="";
+  const f=e.target;
+  const input={
+    species: f.species.value,
+    name: f.name.value.trim(),
+    gender: f.gender.value,
+    breed: f.breed.value,
+    color: f.color.value,
+    birth: f.birth.value,
+    birthTime: f.birthTime.value,
+    birthPlace: f.birthPlace.value,
+    pastName: f.pastName.value.trim(),
+    history: f.history.value,
+  };
+  // 必須チェック
+  if(!input.name){ err.textContent="お名前を入力してください🐾"; return; }
+  if(!input.birth){ err.textContent="生年月日を入力してください🐾"; return; }
+
+  const profile=buildProfile(input);
+  renderResult(profile);
+}
+
+/* ───────────────────────────────────────────
+   6. 初期化
+─────────────────────────────────────────── */
+(function init(){
+  // 背景の星をランダム配置（装飾）
+  const stars=document.getElementById("stars");
+  const glyphs=["✦","✧","⋆","✶","·"];
+  let sh="";
+  for(let i=0;i<40;i++){
+    const x=Math.random()*100, y=Math.random()*100;
+    const s=8+Math.random()*16, d=Math.random()*4;
+    sh+=`<span style="left:${x}%;top:${y}%;font-size:${s}px;animation-delay:${d}s">${glyphs[i%glyphs.length]}</span>`;
+  }
+  stars.innerHTML=sh;
+
+  // 種別切り替えで犬種/猫種セレクトを更新
+  renderBreedOptions("dog");
+  document.querySelectorAll('input[name="species"]').forEach(r=>{
+    r.addEventListener("change",e=>renderBreedOptions(e.target.value));
+  });
+
+  document.getElementById("petForm").addEventListener("submit",onSubmit);
+})();
+</script>
+</body>
+</html>
