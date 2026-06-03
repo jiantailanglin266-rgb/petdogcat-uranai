@@ -183,6 +183,21 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
 .mini-grid .cell{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
 .mini-grid .cell .ck{font-size:11px;font-weight:900;color:var(--orange-d)}
 .mini-grid .cell .cv{font-size:12.5px;color:var(--ink);margin-top:3px;line-height:1.7}
+/* 好調月・好調年を少し強調（⑮月別／⑯5年運勢で使用） */
+.mini-grid .cell.good{border-color:var(--orange);background:linear-gradient(160deg,#fff,var(--cream2))}
+.mini-grid .cell.good .ck{color:var(--orange-d)}
+
+/* 目次（⑮で結果が長くなるため、各項目へジャンプできる目次を冒頭に置く） */
+.toc .toc-t{font-size:14px;font-weight:900;color:var(--orange-d);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.toc ol{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:7px 14px}
+@media(max-width:520px){.toc ol{grid-template-columns:1fr}}
+.toc a{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);
+  font-size:13px;font-weight:500;padding:6px 8px;border-radius:9px;transition:.15s}
+.toc a:hover{background:var(--cream2);color:var(--orange-d)}
+.toc a .tn{flex-shrink:0;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;
+  font-size:11px;font-weight:900;color:#fff;background:var(--orange-l)}
+/* 目次リンクのジャンプ先がスティッキーNavに隠れないように */
+.item{scroll-margin-top:62px}
 
 /* シェアエリア */
 .share{text-align:center;margin-top:28px}
@@ -788,6 +803,9 @@ function buildProfile(input){
     pastName:  input.pastName ? getNameStrokes(input.pastName) : null,
     color:     getColorReading(input.color),
     history:   getHistoryModifier(input.history),
+    // ★現在年を自動取得（ハードコード禁止）。⑭〜⑯の運勢はこの year を基準に動的算出。
+    //   年が変わってページを開けば、自動的にその年の運勢へ切り替わる。
+    year:      new Date().getFullYear(),
   };
 }
 
@@ -982,17 +1000,181 @@ function item12_luck(p){
   return {title:"金運・福運を運んでくる力", ico:"🍀", html};
 }
 
-/* ── 後続回で実装する項目のひな形（関数を追加すれば項目が増える構造） ──
-   ※今回（第2回）は⑥〜⑫まで。残りは後続回。配列 ITEMS に push すれば自動で結果に並ぶ。
-   ※第3回：月別運勢12ヶ月・5年運勢 → 表示は .mini-grid（CSS済み）を使うと収まりよく並ぶ。
-   ※健康系の項目では、医療・治療を示唆する表現は使わない方針を厳守すること。 */
-// function item13_xxx(p){ /* 後続回で実装：⑬ */ }
-// ...（⑬〜⑳）...
-// function itemMonthly(p){ /* 第3回で実装：月別運勢12ヶ月（.mini-grid 使用） */ }
-// function itemFiveYears(p){ /* 第3回で実装：5年運勢（.mini-grid 使用） */ }
-// function itemHappiness(p){ /* 後続回で実装：幸福度メーター */ }
-// function itemBest5(p){ /* 後続回で実装：幸せの瞬間ベスト5 */ }
-// function itemLetter(p){ /* 後続回で実装：ペットから飼い主への手紙 */ }
+/* ═══════════════════════════════════════════════════════════════
+   ★第3回 追加★（項目⑬〜⑰）
+   ・運勢は「現在年(p.year)」と「運命数」から計算で生成（特定年の固定文に依存しない）。
+   ・年が変われば内容も自動で繰り上がる＝何年に開いても破綻しない。
+═══════════════════════════════════════════════════════════════ */
+
+/* ── 数秘ユーティリティ（年運勢の算出用） ── */
+// 数を各桁合算で1〜9まで完全に約める（マスターナンバーは保持しない＝運勢サイクル用）
+function reduce1to9(n){ n=Math.abs(n); while(n>9){ n=String(n).split("").reduce((a,b)=>a+ +b,0); } return n===0?9:n; }
+// 個人年数（パーソナルイヤー）：運命数 ＋ その年の数字 → 1〜9。年ごとの運気テーマを表す
+function personalYearNum(p, year){ return reduce1to9(reduce1to9(p.lifepath.num) + reduce1to9(year)); }
+// 個人月数（パーソナルマンス）：個人年数 ＋ 月 → 1〜9。月ごとのテーマを表す
+function personalMonthNum(pYear, month){ return reduce1to9(pYear + month); }
+
+/* ── 第3回 追加データ ── */
+// ⑬ 家族に与えている影響（運命数ごと）
+const FAMILY_INFLUENCE = {
+  1:"「前を向く元気」。この子がいると家族も自然と前向きになり、新しいことへ踏み出す勇気がわいてきます",
+  2:"「やさしい調和」。この子がいると家族の空気がやわらぎ、ささいなすれ違いも自然と溶けていきます",
+  3:"「笑顔と笑い」。この子がいると家じゅうに笑いが増えて、毎日がぱっと明るくにぎやかになります",
+  4:"「安心と安定」。この子がいると暮らしにリズムと落ち着きが生まれ、家族の心の支えになります",
+  5:"「新鮮な刺激」。この子がいると毎日に変化と楽しみが増え、家族の世界がぐっと広がります",
+  6:"「あたたかい愛情」。この子がいると家族の絆が深まり、おうちが愛で満たされていきます",
+  7:"「癒やしと安らぎ」。この子がいると家族はほっと一息つけて、心が静かに整っていきます",
+  8:"「元気とパワー」。この子がいると家族に活力がみなぎり、前へ進む力が自然とわいてきます",
+  9:"「やさしさと包容」。この子がいると家族みんなが穏やかになり、思いやりの心が広がっていきます",
+  11:"「不思議な癒やし」。この子がいると言葉にできない安心感が家に流れ、家族の心がそっとほどけます",
+  22:"「大きな幸福感」。この子がいると家族の毎日がより豊かに広がり、しあわせのスケールが大きくなります",
+  33:"「無償の愛」。この子がいると家じゅうがあたたかな愛で包まれ、みんなの心が満たされていきます",
+};
+// 個人年数ごとの運勢テーマ（⑭今年・⑯5年で共用）
+const PERSONAL_YEAR = {
+  1:{key:"始まりの年",tone:"新しい種をまくスタートの一年。気になることに挑戦すると、未来へつながる芽が出ます"},
+  2:{key:"絆を育てる年",tone:"ゆっくり信頼を深める一年。家族やお友達との関係があたたかく育っていきます"},
+  3:{key:"楽しさ開花の年",tone:"笑顔と人気が増す一年。毎日がにぎやかになり、うれしい出来事が舞い込みやすいとき"},
+  4:{key:"土台づくりの年",tone:"生活リズムを整える一年。こつこつ積み重ねが、のちの安定という実りになります"},
+  5:{key:"変化と冒険の年",tone:"新しい出会いや環境の変化で世界が広がる一年。フットワーク軽く動くと吉"},
+  6:{key:"愛と家庭の年",tone:"家族の絆がいっそう深まる一年。愛情に包まれ、心満たされる時間が増えます"},
+  7:{key:"休息と充電の年",tone:"のんびり心を整える一年。無理せずおだやかに過ごすことで運気が静かに高まります"},
+  8:{key:"実りと充実の年",tone:"これまでの頑張りが形になる充実の一年。運気が高まり、いいことが返ってきやすいとき"},
+  9:{key:"区切りと感謝の年",tone:"ひとつの流れが完成する一年。整理して感謝することで、次のサイクルへ気持ちよく進めます"},
+};
+// 個人月数ごとの運勢テーマ（⑮月別。短め・可愛く）
+const PERSONAL_MONTH = {
+  1:{key:"スタートの月",tone:"新しいことを始めるのにぴったり。気になる遊びやお出かけにチャレンジ"},
+  2:{key:"なかよしの月",tone:"絆が深まる月。甘えん坊スイッチが入りやすく、寄り添う時間が増えそう"},
+  3:{key:"わくわくの月",tone:"好奇心がアップ。楽しいことが増えて、ごきげんな日が多くなりそう"},
+  4:{key:"おちつきの月",tone:"いつものリズムが心地よい月。のんびりマイペースに過ごすと運気安定"},
+  5:{key:"おでかけの月",tone:"変化を楽しめる月。新しい場所やお散歩コースで世界が広がりそう"},
+  6:{key:"あまえんぼの月",tone:"愛情たっぷりの月。たくさんなでてもらうと幸福度がぐーんとアップ"},
+  7:{key:"ひとやすみの月",tone:"のんびり充電したい月。静かにくつろぐ時間を大切にしてあげて"},
+  8:{key:"絶好調の月",tone:"パワーがみなぎる好調月。元気いっぱい、うれしいことが舞い込みやすい"},
+  9:{key:"まったりの月",tone:"ゆったり振り返る月。無理せずおだやかに過ごすと運気が整う"},
+};
+// ⑰ シニア期の傾向（犬種/猫種グループごと。健康に触れる部分は⑦と同じ薬機法ルールを厳守）
+const SENIOR = {
+  dog:{
+    小型愛玩犬:"シニア期に入っても甘えん坊なまま。段差をゆるやかにして、あたたかくのんびり過ごせる環境を整えてあげると、いつまでも安心して甘えられます",
+    大型使役犬:"体が大きいぶん、年齢を重ねたら関節をいたわるゆったりした暮らしと、ほどよい運動・体重管理を意識してあげると安心。落ち着きが増し、いっそう頼れる存在になります",
+    狩猟犬系:"若い頃の元気はそのままに、シニア期は遊びの強度をやさしく調整。短い遊びをこまめに楽しめると、心も体も生き生きしたまま年を重ねられます",
+    牧羊犬系:"賢さは生涯健在。シニア期も簡単な遊びや課題で頭を使えると満足度が高め。無理のない範囲で「お仕事」を残してあげると、若々しくいられます",
+    短頭種:"もともとマイペース。シニア期は暑さを避け、涼しく穏やかに過ごせる環境をいっそう意識してあげると安心。のんびり度が増して、愛おしさもアップします",
+    日本犬系:"年を重ねるほど風格が増します。気ままさを尊重しつつ、清潔で穏やかな環境を整えてあげると、凛とした佇まいのまま穏やかに過ごせます",
+    その他:"その子らしいペースで穏やかにシニア期を迎えます。年齢に合わせた無理のない暮らしと、いつもの様子を見守るまなざしが、何よりの安心になります",
+  },
+  cat:{
+    活発種:"シニア期も好奇心は健在。高い所へはステップを足すなど、安全に動ける工夫をしてあげると、いつまでも活発さを楽しめます",
+    おっとり種:"もともとのんびり屋さん。シニア期はさらに穏やかに。静かであたたかい定位置を用意してあげると、ゆったり幸せに過ごせます",
+    甘えん坊種:"年を重ねても甘えん坊なまま。ふれあいの時間を大切に、あたたかく安心できる環境を整えてあげると、いっそう寄り添ってくれます",
+    独立種:"シニア期も自分のペースを大切に。そっと見守りつつ落ち着いた居場所を用意してあげると、気高い佇まいのまま穏やかに過ごせます",
+    長毛種:"豊かな被毛のお手入れは生涯のお楽しみ。こまめなブラッシングと涼しい環境を意識してあげると、上品な美しさを保てます",
+    短毛種:"バランスのよさは生涯健在。年齢に合わせた規則正しい暮らしを意識してあげると、その子らしいペースで穏やかに年を重ねられます",
+    その他:"その子らしいペースで穏やかにシニア期を迎えます。年齢に合わせた無理のない暮らしと、見守るまなざしが何よりの安心です",
+  },
+};
+
+/* ── 第3回 項目関数 ── */
+
+// ⑬ 家族に与えている影響（数秘＋経歴補正）
+function item13_family(p){
+  const n=petName(p);
+  let html="";
+  html+=`<p>${n}ちゃんは、ただそこにいるだけで、家族みんなにそっと影響を与えています。</p>`;
+  html+=`<p>運命数「${p.lifepath.num}・${p.lifepath.key}」を持つ${n}ちゃんが家族にもたらしているのは——<b>${FAMILY_INFLUENCE[p.lifepath.num]}</b>。</p>`;
+  // 経歴補正
+  if(p.history.flag==="rescue"){
+    html+=`<p>そして、つらい時間を乗り越えてきたこの子の存在は、家族に「あきらめないことの尊さ」と「迎え入れる喜び」を教えてくれています。</p>`;
+  }else if(p.history.flag==="breeding"){
+    html+=`<p>そして、長くがんばってきたこの子を迎えたことは、家族に「最後まで大切にする幸せ」を教えてくれています。</p>`;
+  }else if(p.history.flag==="other"){
+    html+=`<p>そして、いろいろな道を歩んできたこの子の存在は、家族に「出会いのありがたさ」を教えてくれています。</p>`;
+  }else{
+    html+=`<p>そんな${n}ちゃんは、家族にとってもう、かけがえのない大切な一員です。</p>`;
+  }
+  return {title:"家族に与えている影響", ico:"🏠", html};
+}
+
+// ⑭ 今年の運勢（現在年＝p.year を動的表示。個人年数で総括）
+function item14_yearFortune(p){
+  const n=petName(p);
+  const py=personalYearNum(p, p.year);     // 現在年の個人年数
+  const t=PERSONAL_YEAR[py];
+  let html="";
+  html+=`<p>${p.year}年、${n}ちゃんはどんな一年を過ごすのでしょう。</p>`;
+  html+=`<p>運命数と${p.year}年の運気を重ねると、${n}ちゃんにとって今年は<b>「${t.key}」</b>。${t.tone}。</p>`;
+  html+=`<p>一年の大きな流れを知っておけば、${n}ちゃんの「今」にもっと寄り添えます。次の月別運勢も、ぜひのぞいてみてくださいね。</p>`;
+  return {title:`${p.year}年の運勢`, ico:"🔮", html};
+}
+
+// ⑮ 今年の月別運勢（1〜12月。個人月数でテーマを算出。.mini-grid で表示）★最重量
+function item15_monthly(p){
+  const n=petName(p);
+  const py=personalYearNum(p, p.year);
+  let cells="";
+  for(let m=1;m<=12;m++){
+    const pm=personalMonthNum(py, m);   // その月の個人月数
+    const t=PERSONAL_MONTH[pm];
+    const good = (pm===8);              // 絶好調月は少し強調
+    cells+=`<div class="cell${good?' good':''}">
+      <div class="ck">${m}月・${t.key}${good?' ⭐':''}</div>
+      <div class="cv">${t.tone}</div>
+    </div>`;
+  }
+  let html="";
+  html+=`<p>${n}ちゃんの${p.year}年を、月ごとにのぞいてみましょう。運気には自然な波があります。好調な月は思いきり、ひとやすみの月はのんびり——その子のリズムに合わせてあげてくださいね。</p>`;
+  html+=`<div class="mini-grid">${cells}</div>`;
+  return {title:`${p.year}年の月別運勢`, ico:"📅", html};
+}
+
+// ⑯ 今後5年間の運勢（p.year〜p.year+4 を動的算出。年が進めば対象も中身も自動で繰り上がる）
+function item16_fiveYears(p){
+  const n=petName(p);
+  let cells="";
+  for(let i=0;i<5;i++){
+    const yy=p.year+i;
+    const py=personalYearNum(p, yy);
+    const t=PERSONAL_YEAR[py];
+    const good = (py===8 || py===1);   // 実りの年・始まりの年は少し強調
+    cells+=`<div class="cell${good?' good':''}">
+      <div class="ck">${yy}年・${t.key}${good?' ⭐':''}</div>
+      <div class="cv">${t.tone}</div>
+    </div>`;
+  }
+  let html="";
+  html+=`<p>${n}ちゃんとこれから歩む、${p.year}年から${p.year+4}年までの5年間。運気はめぐる輪のように、年ごとにテーマを変えていきます。</p>`;
+  html+=`<div class="mini-grid">${cells}</div>`;
+  html+=`<p>どんな年も、あなたと一緒なら大丈夫。流れを知って、${n}ちゃんとの毎日をいっそう愛おしんでくださいね。</p>`;
+  return {title:`今後5年間の運勢（${p.year}〜${p.year+4}）`, ico:"🌈", html};
+}
+
+// ⑰ シニア期の傾向（犬種/猫種グループ＋経歴。健康に触れるため⑦と同じ薬機法ルールを厳守）
+function item17_senior(p){
+  const n=petName(p);
+  const sp=p.input.species==="cat"?"cat":"dog";
+  const table=SENIOR[sp];
+  const txt = table[p.breed.key] || table["その他"];
+  let html="";
+  html+=`<p>いつか${n}ちゃんも、ゆっくりと年を重ねていきます。シニア期の過ごし方の「傾向」を、占いの読み物としてやさしくお伝えします。</p>`;
+  html+=`<p>${txt}。</p>`;
+  // 経歴補正（保護・繁殖出身ならこれからの穏やかな時間を温かく）
+  if(p.history.flag==="rescue" || p.history.flag==="breeding"){
+    html+=`<p>これまでたくさんがんばってきた${n}ちゃんにとって、これからの穏やかな時間は何よりのごほうび。シニア期こそ、ゆったりと幸せをかみしめてほしい時期です。</p>`;
+  }else{
+    html+=`<p>年を重ねた${n}ちゃんには、若い頃とはまた違う、深い味わいの愛おしさが宿ります。一日一日を、どうかいとおしんであげてください。</p>`;
+  }
+  // 必須：一般論であることと、獣医師への相談をうながす一文（断定・効果示唆を避ける）
+  html+=`<div class="note">※こちらはあくまで一般的な傾向をもとにした読み物です。病気の診断ではありません。年齢を重ねて気になる様子があるときは、かかりつけの獣医師にご相談くださいね。</div>`;
+  return {title:"シニア期の傾向", ico:"🌷", html};
+}
+
+/* ── 後続回（第4回）で実装する項目のひな形 ── */
+// function item18_xxx(p){ /* ⑱ */ } …（⑱〜⑳）
+// function itemHappiness(p){ /* 幸福度メーター */ }
+// function itemBest5(p){ /* 幸せの瞬間ベスト5 */ }
+// function itemLetter(p){ /* ペットから飼い主への手紙 */ }
 
 // 表示する項目の登録順（後続回はここに push するだけ）
 const ITEMS = [
@@ -1008,6 +1190,11 @@ const ITEMS = [
   item10_dislikePerson, // ⑩
   item11_petMatch,      // ⑪
   item12_luck,          // ⑫
+  item13_family,        // ⑬
+  item14_yearFortune,   // ⑭
+  item15_monthly,       // ⑮
+  item16_fiveYears,     // ⑯
+  item17_senior,        // ⑰
 ];
 
 /* ───────────────────────────────────────────
@@ -1049,10 +1236,20 @@ function renderResult(p){
     </div>
   </div>`;
 
-  // 各項目（ITEMS配列を順に実行）
-  ITEMS.forEach((fn,i)=>{
-    const it=fn(p);
-    html+=`<div class="card item${it.feature?' feature':''}">
+  // 各項目を先に生成（結果オブジェクトの配列）。目次と本文の二度に分けて使う
+  const results = ITEMS.map(fn=>fn(p));
+
+  // 目次（⑮で結果が長くなるため、各項目へジャンプできる目次を冒頭に置く）
+  html+=`<div class="card toc">
+    <div class="toc-t">📖 ${n}ちゃんの鑑定もくじ</div>
+    <ol>${results.map((it,i)=>
+      `<li><a href="#item-${i+1}"><span class="tn">${i+1}</span>${it.ico} ${escapeHtml(it.title)}</a></li>`
+    ).join("")}</ol>
+  </div>`;
+
+  // 各項目本文（目次からジャンプできるよう id="item-N" を付与）
+  results.forEach((it,i)=>{
+    html+=`<div class="card item${it.feature?' feature':''}" id="item-${i+1}">
       <div class="ihead">
         <div class="inum">${i+1}</div>
         <div class="ititle"><span class="ico">${it.ico}</span>${escapeHtml(it.title)}${it.feature?'<span class="badge">占いの顔</span>':''}</div>
@@ -1064,7 +1261,7 @@ function renderResult(p){
   // 後続回予告（拡張の布石）
   html+=`<div class="coming">
     <div class="t">🔮 この続きは、近日公開予定</div>
-    <div class="d">前世・幸福度メーター・幸せの瞬間ベスト5・${n}ちゃんからあなたへの手紙 …など全20項目以上をお届けします。</div>
+    <div class="d">幸福度メーター・幸せの瞬間ベスト5・${n}ちゃんからあなたへの手紙 …などをお届けします。</div>
   </div>`;
 
   // シェアエリア
