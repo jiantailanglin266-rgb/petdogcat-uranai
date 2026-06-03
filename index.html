@@ -34,6 +34,7 @@ gtag('config', 'G-Y2DL6WW9HH');
 <meta property="og:description" content="星座×数秘術×行動学で占う、あなたの子だけのパーソナル鑑定。無料・登録不要。株式会社MOFURI（モフリ）／わんにゃんエクラ。" />
 <meta property="og:image" content="https://petdogcat.jp/uranai/images/ogp-uranai.jpg" />
 <meta property="og:image:secure_url" content="https://petdogcat.jp/uranai/images/ogp-uranai.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="ペット占い｜占い師の女の子とポメラニアン・マンチカン" />
@@ -365,6 +366,15 @@ input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff
 .coming .d{font-size:12px;color:var(--ink-s);margin-top:6px}
 
 footer{text-align:center;padding:34px var(--pad);color:var(--page-txs);font-size:11px;position:relative;z-index:1}
+
+/* 性格診断カード内：画像シェアボタン */
+.persona-share-btn{display:block;width:100%;margin-top:16px;padding:13px;font-family:inherit;font-weight:800;
+  font-size:13.5px;color:#fff;border:none;border-radius:12px;cursor:pointer;letter-spacing:.02em;
+  background:linear-gradient(120deg,var(--orange-d),var(--orange),var(--gold));
+  box-shadow:0 8px 20px rgba(131,103,199,.4);transition:.18s}
+.persona-share-btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(131,103,199,.5)}
+.persona-share-btn:active{transform:translateY(0)}
+.persona-share-btn.busy{opacity:.6;pointer-events:none}
 
 /* ═══ SEO/LLMO 用テキストセクション ═══ */
 .seo-content h2{font-size:18px;font-weight:900;color:var(--orange-d);margin:6px 0 10px}
@@ -1051,6 +1061,8 @@ function item01_personality(p){
   html+=`<p>ときに頑固に見えたり、気分屋に映る瞬間があるかもしれません。けれどそれは、${n}ちゃんが自分の心に正直で、まっすぐに生きている証。短所のように見えるところまで含めて、まるごと愛おしい——それがこの子の魅力です。</p>`;
   // 経歴補正（保護・繁殖などのトーン）
   if(p.history.tone){ html+=`<div class="quote">${p.history.tone}</div>`; }
+  // この性格診断＋顔写真を1枚の画像にしてLINE/X/インスタへシェアするボタン
+  html+=`<button type="button" class="persona-share-btn" id="personaShareBtn">📷 この性格診断を画像でシェア（LINE・X・インスタ）</button>`;
   return {title:"性格診断", ico:"🌟", html, feature:true, badge:"占いの顔"};
 }
 
@@ -1612,6 +1624,128 @@ const ITEMS = [
 // HTMLエスケープ（入力値の安全な表示用）
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+/* ───────────────────────────────────────────
+   ★性格診断のシェア画像生成（Canvas）★
+   ・OGPはサーバー側の固定画像のため、その子の写真や鑑定結果は反映できない。
+     そこで「性格診断＋顔写真」を1枚の画像に描き出し、その画像を直接シェアする。
+   ・navigator.share の files 対応端末（スマホのLINE/X/インスタ等）は画像を直接共有。
+     非対応環境は画像をダウンロードして手動で投稿。すべて端末内で完結（外部送信なし）。
+─────────────────────────────────────────── */
+// 画像を読み込む（dataURL/相対パス）。失敗してもnullで継続
+function loadImage(src){ return new Promise((res)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; }); }
+// Canvasの折り返しテキスト描画。最終的に描いた行数の下端Yを返す
+function wrapText(ctx,text,x,y,maxW,lh){
+  const chars=[...text]; let line="", yy=y;
+  for(const ch of chars){
+    if(ch==="\n"){ ctx.fillText(line,x,yy); line=""; yy+=lh; continue; }
+    const test=line+ch;
+    if(ctx.measureText(test).width>maxW && line){ ctx.fillText(line,x,yy); line=ch; yy+=lh; }
+    else { line=test; }
+  }
+  if(line) ctx.fillText(line,x,yy);
+  return yy;
+}
+
+async function sharePersonality(p, btn){
+  try{
+    if(btn){ btn.classList.add("busy"); btn.textContent="🎨 画像を作成中…"; }
+    await (document.fonts && document.fonts.ready);   // Webフォント反映待ち
+    const n=petName(p);
+    const W=1080,H=1080;
+    const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+    const ctx=cv.getContext("2d");
+
+    // 背景：紫の夜空グラデ
+    const g=ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,"#241544"); g.addColorStop(.55,"#3a2270"); g.addColorStop(1,"#1b1030");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    // 星を散りばめる（疑似ランダム：indexベースで毎回同じ配置）
+    ctx.fillStyle="rgba(232,193,91,.9)";
+    for(let i=0;i<60;i++){
+      const sx=(i*131%W), sy=((i*97+i*i*13)%H), sr=(i%5===0)?3:1.6;
+      ctx.globalAlpha=.3+(i%6)/10; ctx.beginPath(); ctx.arc(sx,sy,sr,0,7); ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    // 外枠（ゴールド細線）
+    ctx.strokeStyle="rgba(232,193,91,.55)"; ctx.lineWidth=4;
+    ctx.strokeRect(24,24,W-48,H-48);
+
+    // ヘッダー：タイトル
+    ctx.textAlign="center";
+    ctx.fillStyle="#E8C15B"; ctx.font="700 34px 'Noto Sans JP',sans-serif";
+    ctx.fillText("🔮 ペット占い ｜ 性格診断", W/2, 96);
+
+    // 顔写真（円形・ゴールドリング）。なければ装飾サークル
+    const cx=W/2, cy=300, R=140;
+    ctx.save();
+    // リング
+    const ring=ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
+    ring.addColorStop(0,"#E8C15B"); ring.addColorStop(.5,"#B9A5E8"); ring.addColorStop(1,"#F4A8C8");
+    ctx.fillStyle=ring; ctx.beginPath(); ctx.arc(cx,cy,R+12,0,7); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(cx,cy,R+5,0,7); ctx.fill();
+    const img = p.input.photo ? await loadImage(p.input.photo) : null;
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.closePath(); ctx.clip();
+    if(img){
+      // cover で円に収める
+      const s=Math.max((2*R)/img.width,(2*R)/img.height);
+      const dw=img.width*s, dh=img.height*s;
+      ctx.drawImage(img, cx-dw/2, cy-dh/2, dw, dh);
+    }else{
+      ctx.fillStyle="#3a2270"; ctx.fillRect(cx-R,cy-R,2*R,2*R);
+      ctx.fillStyle="#E8C15B"; ctx.font="120px serif"; ctx.textBaseline="middle";
+      ctx.fillText(p.input.species==="cat"?"🐱":"🐶", cx, cy+6); ctx.textBaseline="alphabetic";
+    }
+    ctx.restore();
+
+    // 名前
+    ctx.fillStyle="#FFF6E6"; ctx.font="700 56px 'Noto Serif JP',serif";
+    ctx.fillText(`${n} ちゃん`, W/2, 540);
+
+    // 軸チップ（星座／運命数／タイプ）
+    ctx.fillStyle="#D9CCF5"; ctx.font="600 30px 'Noto Sans JP',sans-serif";
+    ctx.fillText(`${p.zodiac.name}${p.zodiac.emoji} ・ 運命数 ${p.lifepath.num}「${p.lifepath.key}」`, W/2, 596);
+
+    // 性格サマリー（①の要点を簡潔に）。中央寄せ折り返し
+    const summary=`${n}ちゃんは${p.breed.label}。${p.zodiac.trait}。`;
+    ctx.fillStyle="#FBF7FF"; ctx.font="400 33px 'Noto Sans JP',sans-serif";
+    // 中央寄せ折り返し用に簡易行分割
+    (function centerWrap(text,y,maxW,lh){
+      const chars=[...text]; let line="", yy=y; const lines=[];
+      for(const ch of chars){ const t=line+ch; if(ctx.measureText(t).width>maxW && line){ lines.push(line); line=ch; } else line=t; }
+      if(line) lines.push(line);
+      lines.slice(0,5).forEach((ln,i)=>ctx.fillText(ln, W/2, yy+i*lh));
+    })(summary, 690, W-220, 50);
+
+    // フッター（ブランド／URL）
+    ctx.fillStyle="#E8C15B"; ctx.font="700 30px 'Noto Sans JP',sans-serif";
+    ctx.fillText("わんにゃんチェッカー", W/2, 960);
+    ctx.fillStyle="#B9A5E8"; ctx.font="500 26px 'Noto Sans JP',sans-serif";
+    ctx.fillText("petdogcat.jp/uranai", W/2, 1000);
+
+    // PNG化
+    const blob=await new Promise(r=>cv.toBlob(r,"image/png",0.92));
+    const file=new File([blob],`${n}-uranai-personality.png`,{type:"image/png"});
+    const text=`${n}ちゃんの性格診断🔮 ${p.zodiac.name}・運命数${p.lifepath.num}「${p.lifepath.key}」#ペット占い #わんにゃんチェッカー`;
+    const url="https://petdogcat.jp/uranai/";
+
+    // 画像つきシェア（LINE/X/インスタ等）。対応端末はネイティブ共有シート
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], text, url});
+    }else{
+      // 非対応：画像をダウンロード＋テキストをコピー
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      try{ await navigator.clipboard.writeText(`${text}\n${url}`); }catch(e){}
+      alert("性格診断の画像を保存しました📷\nLINE・X・Instagramの投稿に添付してシェアしてね！（キャプションもコピー済み）");
+    }
+  }catch(e){
+    if(e && e.name==="AbortError"){ /* ユーザーがシェアをキャンセル：何もしない */ }
+    else { alert("画像の作成に失敗しました。お手数ですが画面のスクリーンショットでシェアしてください🙏"); }
+  }finally{
+    if(btn){ btn.classList.remove("busy"); btn.textContent="📷 この性格診断を画像でシェア（LINE・X・インスタ）"; }
+  }
+}
+
 // 犬種/猫種セレクトを種別に応じて切り替え
 function renderBreedOptions(species){
   const sel=document.getElementById("breed");
@@ -1734,6 +1868,9 @@ function renderResult(p){
     navigator.clipboard?.writeText(`${shareText}\n${shareUrl}`);
     alert("キャプションをコピーしました！結果のスクショと一緒に、Instagramに投稿してね📸");
   });
+  // ① 性格診断を「写真入りの1枚画像」にしてシェア（LINE/X/インスタ対応）
+  const personaBtn=document.getElementById("personaShareBtn");
+  if(personaBtn){ personaBtn.addEventListener("click",()=>sharePersonality(p, personaBtn)); }
   // 別の子を占う（入力に戻る）
   document.getElementById("againBtn").addEventListener("click",()=>{
     r.classList.remove("show"); r.innerHTML="";
