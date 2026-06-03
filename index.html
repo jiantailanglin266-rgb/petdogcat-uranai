@@ -376,7 +376,13 @@ footer{text-align:center;padding:34px var(--pad);color:var(--page-txs);font-size
 .persona-share-btn:active{transform:translateY(0)}
 .persona-share-btn.busy{opacity:.6;pointer-events:none}
 .b-share.busy{opacity:.6;pointer-events:none}
-.share-hint{font-size:11px;color:var(--ink-s);margin-top:10px;line-height:1.6}
+.share-hint{font-size:11px;color:var(--ink-s);margin-top:10px;line-height:1.7;text-align:left;
+  background:var(--cream2);border-radius:10px;padding:10px 12px}
+.share-hint b{color:var(--orange-d)}
+.b-save{font-family:inherit;font-weight:800;font-size:14px;padding:11px 22px;border-radius:12px;cursor:pointer;
+  border:1.5px solid var(--line);background:#fff;color:var(--orange-d);transition:.18s}
+.b-save:hover{transform:translateY(-2px)}
+.b-save.busy{opacity:.6;pointer-events:none}
 
 /* 共有モーダル（PC等：画像プレビュー＋保存＋コピー＋各SNS） */
 .share-modal{position:fixed;inset:0;z-index:1000;background:rgba(20,8,40,.78);backdrop-filter:blur(4px);
@@ -1767,6 +1773,23 @@ async function shareResult(p, btn){
   }
 }
 
+// 画像だけ保存（全端末で確実に動く・正しいSNSアカウントで手動投稿したい人向け）
+async function saveShareImage(p, btn){
+  const orig = btn ? btn.textContent : "";
+  try{
+    if(btn){ btn.classList.add("busy"); btn.textContent="🎨 画像を作成中…"; }
+    const s=await buildShareBlob(p);
+    const a=document.createElement("a"); a.href=URL.createObjectURL(s.blob); a.download=s.file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    try{ await navigator.clipboard.writeText(`${s.text}\n${s.url}`); }catch(e){}
+    alert("画像を保存しました📥（キャプションもコピー済み）\n\nLINE・X・Instagramのアプリを開き、ご自身のアカウントを選んでから、保存した画像を投稿してください。\n（特にInstagramは、アプリ側で投稿アカウントを切り替えてから投稿してください）");
+  }catch(e){
+    alert("画像の保存に失敗しました。お手数ですが画面のスクリーンショットでシェアしてください🙏");
+  }finally{
+    if(btn){ btn.classList.remove("busy"); btn.textContent=orig; }
+  }
+}
+
 // PC向け共有モーダル：生成画像のプレビュー＋保存＋キャプションコピー＋各SNSを開く
 function showShareModal(p, s){
   const n=petName(p);
@@ -1799,7 +1822,7 @@ function showShareModal(p, s){
   // 各SNSを開く前にキャプションを自動コピー（投稿欄にすぐ貼れる）
   ov.querySelector(".sm-x").addEventListener("click",doCopy);
   ov.querySelector(".sm-line").addEventListener("click",doCopy);
-  ov.querySelector(".sm-ig").addEventListener("click",async()=>{ await doCopy(); alert("キャプションをコピーしました📋\n保存した画像をInstagramアプリで投稿してね！"); });
+  ov.querySelector(".sm-ig").addEventListener("click",async()=>{ await doCopy(); alert("キャプションをコピーしました📋\n「📥画像を保存」した画像を、Instagramアプリで投稿してください。\n※投稿先が別アカウント（お店の公式など）になる場合は、Instagram側でご自身のアカウントに切り替えてから投稿してください。"); });
 }
 
 // 犬種/猫種セレクトを種別に応じて切り替え
@@ -1876,7 +1899,11 @@ function renderResult(p){
     <div class="btns">
       <button type="button" class="b-share" id="shareMainBtn">📷 結果を画像でシェア（LINE・X・インスタ）</button>
     </div>
-    <p class="share-hint">スマホはそのまま各SNSへ。パソコンは画像を保存してSNSに添付できます。</p>
+    <div class="btns" style="margin-top:8px">
+      <button type="button" class="b-save" id="shareSaveBtn">📥 画像だけ保存する</button>
+    </div>
+    <p class="share-hint">スマホは各SNSへそのまま／パソコンは画像を保存して添付できます。<br>
+    💡 <b>Instagramで投稿先が別アカウント（お店の公式など）になってしまう場合</b>は、いったん「📥画像だけ保存」→ Instagramアプリを開いて<b>自分のアカウントに切り替えてから</b>投稿してください。※投稿アカウントはInstagram側の設定で決まり、このページからは選べません。</p>
     <div class="btns" style="margin-top:6px">
       <button type="button" class="b-again" id="againBtn">🔄 別の子を占う</button>
     </div>
@@ -1910,6 +1937,8 @@ function renderResult(p){
   // ── シェア（写真＋性格診断の画像を生成して共有。スマホ=ネイティブ／PC=モーダル） ──
   const shareMainBtn=document.getElementById("shareMainBtn");
   if(shareMainBtn){ shareMainBtn.addEventListener("click",()=>shareResult(p, shareMainBtn)); }
+  const shareSaveBtn=document.getElementById("shareSaveBtn");
+  if(shareSaveBtn){ shareSaveBtn.addEventListener("click",()=>saveShareImage(p, shareSaveBtn)); }
   // ① 性格診断カード内のシェアボタンも同じ画像シェアへ
   const personaBtn=document.getElementById("personaShareBtn");
   if(personaBtn){ personaBtn.addEventListener("click",()=>shareResult(p, personaBtn)); }
